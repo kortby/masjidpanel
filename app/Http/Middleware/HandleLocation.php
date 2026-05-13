@@ -15,6 +15,15 @@ class HandleLocation
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->has('location')) {
+            $location = $request->query('location');
+            if (empty($location)) {
+                $request->session()->forget('location');
+            } else {
+                $request->session()->put('location', $location);
+            }
+        }
+
         return $next($request);
     }
 }

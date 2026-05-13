@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategorySuggestionController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MessageController;
@@ -9,7 +10,8 @@ use App\Http\Middleware\IsVerified;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-Route::get('/', [PostController::class, 'index'])->name('home');
+Route::get('/', [CategoryController::class, 'index'])->name('home');
+Route::get('/feed', [PostController::class, 'index'])->name('feed');
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {

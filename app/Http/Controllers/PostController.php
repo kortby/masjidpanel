@@ -13,6 +13,7 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $city = $request->session()->get('location');
+
         $categoryId = $request->query('category_id');
 
         $categories = Category::orderedByLocationDemand($city)->get();
@@ -27,19 +28,24 @@ class PostController extends Controller
             $postsQuery->where('city', $city);
         }
 
-        if ($categoryId) {
-            $postsQuery->where('category_id', $categoryId);
+        if ($request->has('category_id')) {
+            $postsQuery->where('category_id', $request->category_id);
         }
 
-        $posts = $postsQuery->latest()->paginate(15);
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $postsQuery->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
 
-        return Inertia::render('Board/Index', [
+        $posts = $postsQuery->latest()->paginate(15)->withQueryString();
+
+        return Inertia::render('Board/Feed', [
             'categories' => $categories,
             'posts' => $posts,
-            'filters' => [
-                'category_id' => $categoryId,
-                'location' => $city,
-            ],
+            'filters' => array_merge($request->only(['category_id', 'search']), ['location' => $city]),
         ]);
     }
 
