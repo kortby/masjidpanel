@@ -103,7 +103,7 @@ const currentCategory = computed(() => {
                             <Badge variant="secondary" class="mb-2 bg-primary/10 text-primary hover:bg-primary/20">{{ post.category.name }}</Badge>
                             <CardTitle class="text-xl group-hover:text-primary transition-colors">{{ post.title }}</CardTitle>
                             <CardDescription class="mt-1">
-                                Posted by <span class="font-medium text-foreground/80">{{ post.user.name }}</span> &bull; {{ new Date(post.created_at).toLocaleDateString() }}
+                                Posted by <Link :href="`/users/${post.user.id}`" class="font-medium text-foreground/80 hover:text-primary hover:underline transition-colors">{{ post.user.name }}</Link> &bull; {{ new Date(post.created_at).toLocaleDateString() }}
                             </CardDescription>
                         </div>
                         <div class="flex gap-2 flex-wrap justify-end items-center">

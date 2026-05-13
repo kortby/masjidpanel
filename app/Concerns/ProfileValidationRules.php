@@ -18,6 +18,16 @@ trait ProfileValidationRules
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'age' => ['nullable', 'integer', 'min:13', 'max:120'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'zip_code' => ['nullable', 'string', 'max:20'],
+            'phone_number' => ['nullable', 'string', 'max:20'],
+            'show_age' => ['boolean'],
+            'show_location' => ['boolean'],
+            'show_address' => ['boolean'],
+            'show_phone' => ['boolean'],
+            'show_email' => ['boolean'],
         ];
     }
 

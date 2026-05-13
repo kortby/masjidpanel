@@ -135,6 +135,7 @@ class PostController extends Controller
             'meta' => $post->meta,
             'created_at' => $post->created_at,
             'category' => $post->category->only('id', 'name'),
+            'author_id' => $author->id,
             'author_name' => $author->name,
             'contact_info' => $contactInfo,
             'images' => $mediaUrls,

@@ -13,7 +13,7 @@ use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'city', 'zip_code', 'phone_number', 'show_phone', 'show_email', 'is_verified'])]
+#[Fillable(['name', 'email', 'password', 'city', 'zip_code', 'phone_number', 'show_phone', 'show_email', 'is_verified', 'age', 'address', 'show_age', 'show_location', 'show_address'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -34,6 +34,15 @@ class User extends Authenticatable
             'show_phone' => 'boolean',
             'show_email' => 'boolean',
             'is_verified' => 'boolean',
+            'age' => 'integer',
+            'show_age' => 'boolean',
+            'show_location' => 'boolean',
+            'show_address' => 'boolean',
         ];
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
     }
 }

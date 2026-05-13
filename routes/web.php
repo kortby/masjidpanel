@@ -14,6 +14,7 @@ use Laravel\Fortify\Features;
 Route::get('/', [CategoryController::class, 'index'])->name('home');
 Route::get('/feed', [PostController::class, 'index'])->name('feed');
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+Route::get('/users/{user}', [\App\Http\Controllers\PublicProfileController::class, 'show'])->name('users.show');
 
 Route::inertia('/about', 'About')->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
@@ -37,6 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
         Route::post('/suggestions/{suggestion}/approve', [CategorySuggestionController::class, 'approve'])->name('suggestions.approve');
         Route::post('/suggestions/{suggestion}/reject', [CategorySuggestionController::class, 'reject'])->name('suggestions.reject');
+        
+        Route::post('/users/{user}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
+        Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
     });
 });
 

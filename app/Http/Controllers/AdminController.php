@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\CategorySuggestion;
 use App\Models\Post;
 use App\Models\User;
@@ -34,9 +35,41 @@ class AdminController extends Controller
                 ];
             });
 
+        $users = User::withCount('posts')
+            ->latest()
+            ->paginate(50)
+            ->through(fn ($user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'is_verified' => (bool)$user->is_verified,
+                'posts_count' => $user->posts_count,
+                'created_at' => $user->created_at,
+            ]);
+
+        $categories = Category::withCount('posts')->orderBy('name')->get();
+
         return Inertia::render('Admin/Dashboard', [
             'metrics' => $metrics,
             'suggestions' => $suggestions,
+            'users' => $users,
+            'categories' => $categories,
         ]);
+    }
+
+    public function verifyUser(User $user)
+    {
+        $user->update(['is_verified' => true]);
+        return redirect()->back()->with('success', 'User has been manually verified.');
+    }
+
+    public function destroyUser(User $user)
+    {
+        if ($user->hasRole('Super Admin')) {
+            return redirect()->back()->with('error', 'Cannot delete Super Admin accounts.');
+        }
+        
+        $user->delete();
+        return redirect()->back()->with('success', 'User and all associated posts have been deleted.');
     }
 }

@@ -49,7 +49,7 @@ const submitMessage = () => {
                         </div>
                         <CardTitle class="text-3xl">{{ post.title }}</CardTitle>
                         <CardDescription>
-                            Posted by {{ post.author_name }} in {{ post.city }}<span v-if="post.zip_code">, {{ post.zip_code }}</span>
+                            Posted by <Link :href="`/users/${post.author_id}`" class="text-primary hover:underline font-medium">{{ post.author_name }}</Link> in {{ post.city }}<span v-if="post.zip_code">, {{ post.zip_code }}</span>
                         </CardDescription>
                         
                         <div v-if="post.meta" class="flex gap-2 flex-wrap mt-4">
