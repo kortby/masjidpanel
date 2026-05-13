@@ -1,13 +1,16 @@
 <?php
 
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CategorySuggestionController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PostController;
 use App\Http\Middleware\IsVerified;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-Route::inertia('/', 'Welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', [PostController::class, 'index'])->name('home');
+Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
@@ -18,7 +21,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 
     Route::middleware([IsVerified::class])->group(function () {
-        // Protected routes requiring the $1 fee will go here
+        Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+        Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+        Route::post('/posts/{post}/message', [MessageController::class, 'store'])->name('posts.message');
+    });
+
+    Route::middleware(['role:Super Admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+        Route::post('/suggestions/{suggestion}/approve', [CategorySuggestionController::class, 'approve'])->name('suggestions.approve');
+        Route::post('/suggestions/{suggestion}/reject', [CategorySuggestionController::class, 'reject'])->name('suggestions.reject');
     });
 });
 
