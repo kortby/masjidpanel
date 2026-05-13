@@ -97,7 +97,7 @@ class PostController extends Controller
             ]);
         }
 
-        return redirect()->route('home')->with('success', 'Post created successfully!');
+        return redirect()->route('posts.show', $post)->with('success', 'Post created successfully!');
     }
 
     public function edit(Request $request, Post $post)

@@ -13,7 +13,7 @@ use Laravel\Fortify\Features;
 
 Route::get('/', [CategoryController::class, 'index'])->name('home');
 Route::get('/feed', [PostController::class, 'index'])->name('feed');
-Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post');
 Route::get('/users/{user}', [\App\Http\Controllers\PublicProfileController::class, 'show'])->name('users.show');
 
 Route::inertia('/about', 'About')->name('about');
