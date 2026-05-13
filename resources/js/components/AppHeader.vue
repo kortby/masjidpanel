@@ -236,7 +236,7 @@ const rightNavItems: NavItem[] = [
                         </div>
                     </div>
 
-                    <DropdownMenu>
+                    <DropdownMenu v-if="auth.user">
                         <DropdownMenuTrigger :as-child="true">
                             <Button
                                 variant="ghost"
@@ -247,9 +247,9 @@ const rightNavItems: NavItem[] = [
                                     class="size-8 overflow-hidden rounded-full"
                                 >
                                     <AvatarImage
-                                        v-if="auth.user.avatar"
+                                        v-if="auth.user?.avatar"
                                         :src="auth.user.avatar"
-                                        :alt="auth.user.name"
+                                        :alt="auth.user?.name"
                                     />
                                     <AvatarFallback
                                         class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white"
@@ -263,6 +263,15 @@ const rightNavItems: NavItem[] = [
                             <UserMenuContent :user="auth.user" />
                         </DropdownMenuContent>
                     </DropdownMenu>
+
+                    <div v-else class="flex items-center gap-2">
+                        <Link href="/login">
+                            <Button variant="ghost" class="h-9">Log in</Button>
+                        </Link>
+                        <Link href="/register">
+                            <Button class="h-9 rounded-full">Sign up</Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
