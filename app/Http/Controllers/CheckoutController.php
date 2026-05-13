@@ -24,6 +24,7 @@ class CheckoutController extends Controller
         return $request->user()->checkout([$priceId => 1], [
             'success_url' => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('checkout.cancel'),
+            'client_reference_id' => $request->user()->id,
         ]);
     }
 
@@ -35,18 +36,7 @@ class CheckoutController extends Controller
             return redirect()->route('checkout.index')->with('error', 'Invalid session.');
         }
 
-        try {
-            $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
-
-            if ($session->payment_status === 'paid') {
-                $request->user()->update(['is_verified' => true]);
-                return redirect()->route('dashboard')->with('success', 'Your account has been verified successfully!');
-            }
-        } catch (\Exception $e) {
-            return redirect()->route('checkout.index')->with('error', 'Error verifying payment.');
-        }
-
-        return redirect()->route('checkout.index')->with('error', 'Payment not completed.');
+        return redirect()->route('dashboard')->with('success', 'Thank you! Your verification has been processed.');
     }
 
     public function cancel()
