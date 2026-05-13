@@ -20,8 +20,10 @@ Route::inertia('/about', 'About')->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store']);
 
+Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\Auth\ProviderController::class, 'redirect'])->name('auth.provider.redirect');
+Route::get('/auth/{provider}/callback', [\App\Http\Controllers\Auth\ProviderController::class, 'callback'])->name('auth.provider.callback');
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
@@ -31,6 +33,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware([IsVerified::class])->group(function () {
         Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
         Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+        
+        Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
+        Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
+        Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+        
         Route::post('/posts/{post}/message', [MessageController::class, 'store'])->name('posts.message');
     });
 

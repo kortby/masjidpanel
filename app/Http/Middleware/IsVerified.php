@@ -15,7 +15,11 @@ class IsVerified
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user() || ! $request->user()->is_verified) {
+        if (! $request->user()) {
+            return redirect()->route('login');
+        }
+
+        if (! $request->user()->is_verified && ! $request->user()->hasRole('Super Admin')) {
             return redirect()->route('checkout.index');
         }
 

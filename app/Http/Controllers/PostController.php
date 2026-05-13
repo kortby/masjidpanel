@@ -100,6 +100,70 @@ class PostController extends Controller
         return redirect()->route('home')->with('success', 'Post created successfully!');
     }
 
+    public function edit(Request $request, Post $post)
+    {
+        abort_if($post->user_id !== $request->user()->id && !$request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
+
+        $categories = Category::orderBy('name')->get();
+
+        $post->load('media');
+
+        $mediaUrls = $post->getMedia('images')->map(function ($media) {
+            return [
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+            ];
+        });
+
+        return Inertia::render('Posts/Edit', [
+            'categories' => $categories,
+            'post' => [
+                'id' => $post->id,
+                'category_id' => $post->category_id,
+                'title' => $post->title,
+                'description' => $post->description,
+                'city' => $post->city,
+                'zip_code' => $post->zip_code,
+                'meta' => $post->meta,
+                'images' => $mediaUrls,
+            ],
+        ]);
+    }
+
+    public function update(Request $request, Post $post)
+    {
+        abort_if($post->user_id !== $request->user()->id && !$request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
+
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'city' => 'required|string|max:255',
+            'zip_code' => 'nullable|string|max:20',
+            'meta' => 'nullable|array',
+        ]);
+
+        $post->update([
+            'category_id' => $validated['category_id'],
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'city' => $validated['city'],
+            'zip_code' => $validated['zip_code'] ?? null,
+            'meta' => $validated['meta'] ?? null,
+        ]);
+
+        return redirect()->route('posts.show', $post)->with('success', 'Post updated successfully!');
+    }
+
+    public function destroy(Request $request, Post $post)
+    {
+        abort_if($post->user_id !== $request->user()->id && !$request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
+
+        $post->delete();
+
+        return redirect()->route('feed')->with('success', 'Post deleted successfully.');
+    }
+
     public function show(Request $request, Post $post)
     {
         $post->load(['user', 'category', 'media']);

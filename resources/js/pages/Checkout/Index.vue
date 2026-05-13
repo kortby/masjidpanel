@@ -35,7 +35,7 @@ const submit = () => {
                 <CardHeader>
                     <CardTitle>Verify Your Identity</CardTitle>
                     <CardDescription>
-                        To maintain a high-quality, spam-free community board, we require a one-time $1 identity verification fee.
+                        For security reasons and to prevent spam, we require a one-time $1 identity verification fee before you can post on the board.
                     </CardDescription>
                 </CardHeader>
                 

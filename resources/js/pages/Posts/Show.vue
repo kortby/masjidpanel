@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,12 @@ const submitMessage = () => {
         preserveScroll: true,
         onSuccess: () => form.reset('message'),
     });
+};
+
+const deletePost = () => {
+    if (confirm('Are you sure you want to delete this post? This cannot be undone.')) {
+        router.delete(`/posts/${props.post.id}`);
+    }
 };
 </script>
 
@@ -84,8 +90,15 @@ const submitMessage = () => {
                     <CardHeader>
                         <CardTitle class="text-lg">Your Post</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent class="space-y-4">
                         <p class="text-sm text-muted-foreground">This is how your post appears to others on the board.</p>
+                        
+                        <div class="flex flex-col gap-3 pt-2">
+                            <Link :href="`/posts/${post.id}/edit`">
+                                <Button variant="outline" class="w-full">Edit Post</Button>
+                            </Link>
+                            <Button variant="destructive" class="w-full" @click="deletePost">Delete Post</Button>
+                        </div>
                     </CardContent>
                 </Card>
 
