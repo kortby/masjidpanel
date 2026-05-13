@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategorySuggestionController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PostController;
 use App\Http\Middleware\IsVerified;
@@ -13,6 +14,10 @@ use Laravel\Fortify\Features;
 Route::get('/', [CategoryController::class, 'index'])->name('home');
 Route::get('/feed', [PostController::class, 'index'])->name('feed');
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+
+Route::inertia('/about', 'About')->name('about');
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store']);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
