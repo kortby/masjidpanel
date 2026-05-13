@@ -12,7 +12,13 @@ class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $city = $request->session()->get('location');
+        $locationFilter = $request->query('location');
+        if ($locationFilter !== null) {
+            $request->session()->put('location', $locationFilter);
+            $city = $locationFilter;
+        } else {
+            $city = $request->session()->get('location');
+        }
 
         $categoryId = $request->query('category_id');
 
@@ -25,7 +31,12 @@ class PostController extends Controller
             });
 
         if ($city) {
-            $postsQuery->where('city', $city);
+            if (is_numeric($city)) {
+                $postsQuery->orderByRaw('CASE WHEN zip_code IS NULL OR zip_code = "" THEN 1 ELSE 0 END ASC')
+                           ->orderByRaw('ABS(CAST(zip_code AS INTEGER) - ?) ASC', [(int)$city]);
+            } else {
+                $postsQuery->where('city', $city);
+            }
         }
 
         if ($request->has('category_id')) {
