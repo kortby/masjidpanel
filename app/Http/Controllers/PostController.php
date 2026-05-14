@@ -223,4 +223,28 @@ class PostController extends Controller
             'isVerified' => $isVerified,
         ]);
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->query('q', '');
+        
+        if (empty(trim($query))) {
+            return response()->json([]);
+        }
+
+        $posts = Post::with('category')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'like', "%{$query}%")
+                  ->orWhere('description', 'like', "%{$query}%");
+            })
+            ->latest()
+            ->take(8)
+            ->get(['id', 'title', 'category_id', 'city', 'created_at']);
+
+        return response()->json($posts);
+    }
 }
