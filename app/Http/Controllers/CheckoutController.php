@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Laravel\Cashier\Cashier;
 
 class CheckoutController extends Controller
 {
     public function index(Request $request)
     {
         if ($request->user()->is_verified) {
-            return redirect()->route('dashboard');
+            return redirect()->intended(route('home'));
+        }
+
+        if (!session()->has('url.intended') && url()->previous() !== url()->current()) {
+            session(['url.intended' => url()->previous()]);
         }
 
         return Inertia::render('Checkout/Index');
@@ -19,13 +22,15 @@ class CheckoutController extends Controller
 
     public function process(Request $request)
     {
-        $priceId = config('services.stripe.verification_price_id', 'price_fake_123'); // Fallback for dev
+        $priceId = env('PRICE_TO_VERIFY'); // Fallback for dev
 
-        return $request->user()->checkout([$priceId => 1], [
-            'success_url' => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
+        $checkout = $request->user()->checkout([$priceId => 1], [
+            'success_url' => route('checkout.success').'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('checkout.cancel'),
             'client_reference_id' => $request->user()->id,
         ]);
+
+        return Inertia::location($checkout->url);
     }
 
     public function success(Request $request)
@@ -36,11 +41,22 @@ class CheckoutController extends Controller
             return redirect()->route('checkout.index')->with('error', 'Invalid session.');
         }
 
-        return redirect()->route('dashboard')->with('success', 'Thank you! Your verification has been processed.');
+        try {
+            $stripe = $request->user()->stripe();
+            $session = $stripe->checkout->sessions->retrieve($sessionId);
+
+            if ($session->payment_status === 'paid') {
+                $request->user()->forceFill(['is_verified' => true])->save();
+            }
+        } catch (\Exception $e) {
+            return redirect()->intended(route('home'))->with('error', 'There was an issue verifying your payment. Please contact support.');
+        }
+
+        return redirect()->intended(route('home'))->with('success', 'Thank you! Your verification has been processed.');
     }
 
     public function cancel()
     {
-        return redirect()->route('checkout.index')->with('error', 'Payment was cancelled.');
+        return redirect()->intended(route('home'))->with('error', 'Payment was cancelled.');
     }
 }

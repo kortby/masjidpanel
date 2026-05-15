@@ -38,7 +38,7 @@ return new class extends Migration
                 'phone_number',
                 'show_phone',
                 'show_email',
-                'is_verified'
+                'is_verified',
             ]);
         });
     }

@@ -9,7 +9,7 @@ uses(RefreshDatabase::class);
 
 it('dynamically sorts categories by demand based on location', function () {
     $user = User::factory()->create();
-    
+
     // Create categories
     $catJobs = Category::create(['name' => 'Jobs', 'slug' => 'jobs']);
     $catHousing = Category::create(['name' => 'Housing', 'slug' => 'housing']);
@@ -20,13 +20,13 @@ it('dynamically sorts categories by demand based on location', function () {
         Post::create([
             'user_id' => $user->id,
             'category_id' => $catJobs->id,
-            'title' => 'Job ' . $i,
+            'title' => 'Job '.$i,
             'description' => 'Desc',
             'city' => 'Seattle',
             'expires_at' => now()->addDays(10),
         ]);
     }
-    
+
     Post::create([
         'user_id' => $user->id,
         'category_id' => $catHousing->id,
@@ -41,13 +41,13 @@ it('dynamically sorts categories by demand based on location', function () {
         Post::create([
             'user_id' => $user->id,
             'category_id' => $catEvents->id,
-            'title' => 'Event ' . $i,
+            'title' => 'Event '.$i,
             'description' => 'Desc',
             'city' => 'Portland',
             'expires_at' => now()->addDays(10),
         ]);
     }
-    
+
     Post::create([
         'user_id' => $user->id,
         'category_id' => $catJobs->id,
@@ -59,7 +59,7 @@ it('dynamically sorts categories by demand based on location', function () {
 
     // Query for Seattle
     $seattleCategories = Category::orderedByLocationDemand('Seattle')->get();
-    
+
     // Jobs should be first (3 posts), Housing second (1 post), Events third (0 posts)
     expect($seattleCategories[0]->id)->toBe($catJobs->id)
         ->and($seattleCategories[0]->posts_count)->toBe(3)
@@ -70,7 +70,7 @@ it('dynamically sorts categories by demand based on location', function () {
 
     // Query for Portland
     $portlandCategories = Category::orderedByLocationDemand('Portland')->get();
-    
+
     // Events should be first (2 posts), Jobs second (1 post), Housing third (0 posts)
     expect($portlandCategories[0]->id)->toBe($catEvents->id)
         ->and($portlandCategories[0]->posts_count)->toBe(2)

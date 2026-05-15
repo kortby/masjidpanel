@@ -15,10 +15,11 @@ class MessageController extends Controller
         $user = $request->user();
 
         // Rate Limiting: 10 messages per hour
-        $key = 'send-message:' . $user->id;
+        $key = 'send-message:'.$user->id;
         if (RateLimiter::tooManyAttempts($key, 10)) {
             $seconds = RateLimiter::availableIn($key);
-            return back()->with('error', 'You have sent too many messages. Please try again in ' . ceil($seconds / 60) . ' minutes.');
+
+            return back()->with('error', 'You have sent too many messages. Please try again in '.ceil($seconds / 60).' minutes.');
         }
 
         $validated = $request->validate([

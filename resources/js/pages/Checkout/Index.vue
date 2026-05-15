@@ -53,7 +53,7 @@ const submit = () => {
                 <CardFooter class="flex justify-end">
                     <form @submit.prevent="submit" class="w-full sm:w-auto">
                         <Button type="submit" class="w-full sm:w-auto" :disabled="form.processing">
-                            Pay $1.00 & Verify
+                            Pay $1 & Verify
                         </Button>
                     </form>
                 </CardFooter>

@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\CategorySuggestion;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class AdminController extends Controller
@@ -42,7 +41,7 @@ class AdminController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'is_verified' => (bool)$user->is_verified,
+                'is_verified' => (bool) $user->is_verified,
                 'posts_count' => $user->posts_count,
                 'created_at' => $user->created_at,
             ]);
@@ -60,6 +59,7 @@ class AdminController extends Controller
     public function verifyUser(User $user)
     {
         $user->update(['is_verified' => true]);
+
         return redirect()->back()->with('success', 'User has been manually verified.');
     }
 
@@ -68,8 +68,9 @@ class AdminController extends Controller
         if ($user->hasRole('Super Admin')) {
             return redirect()->back()->with('error', 'Cannot delete Super Admin accounts.');
         }
-        
+
         $user->delete();
+
         return redirect()->back()->with('success', 'User and all associated posts have been deleted.');
     }
 }

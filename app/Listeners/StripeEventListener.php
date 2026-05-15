@@ -17,9 +17,9 @@ class StripeEventListener
 
             if (isset($session['client_reference_id'])) {
                 $userId = $session['client_reference_id'];
-                
+
                 $user = User::find($userId);
-                
+
                 if ($user) {
                     $user->update(['is_verified' => true]);
                     Log::info("Verified user {$user->id} via Stripe webhook.");

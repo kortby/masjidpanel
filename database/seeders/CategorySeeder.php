@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
@@ -28,9 +29,9 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            \App\Models\Category::firstOrCreate([
+            Category::firstOrCreate([
                 'name' => $category,
-                'slug' => \Illuminate\Support\Str::slug($category),
+                'slug' => Str::slug($category),
             ]);
         }
     }

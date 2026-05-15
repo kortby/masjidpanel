@@ -27,13 +27,13 @@ class PostController extends Controller
         $postsQuery = Post::with(['user', 'category', 'media'])
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             });
 
         if ($city) {
             if (is_numeric($city)) {
                 $postsQuery->orderByRaw('CASE WHEN zip_code IS NULL OR zip_code = "" THEN 1 ELSE 0 END ASC')
-                           ->orderByRaw('ABS(CAST(zip_code AS INTEGER) - ?) ASC', [(int)$city]);
+                    ->orderByRaw('ABS(CAST(zip_code AS INTEGER) - ?) ASC', [(int) $city]);
             } else {
                 $postsQuery->where('city', $city);
             }
@@ -45,9 +45,9 @@ class PostController extends Controller
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $postsQuery->where(function($q) use ($search) {
+            $postsQuery->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -100,7 +100,7 @@ class PostController extends Controller
             }
         }
 
-        if (!empty($validated['suggested_category_name'])) {
+        if (! empty($validated['suggested_category_name'])) {
             CategorySuggestion::create([
                 'user_id' => $request->user()->id,
                 'post_id' => $post->id,
@@ -113,7 +113,7 @@ class PostController extends Controller
 
     public function edit(Request $request, Post $post)
     {
-        abort_if($post->user_id !== $request->user()->id && !$request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
+        abort_if($post->user_id !== $request->user()->id && ! $request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
 
         $categories = Category::orderBy('name')->get();
 
@@ -143,7 +143,7 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post)
     {
-        abort_if($post->user_id !== $request->user()->id && !$request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
+        abort_if($post->user_id !== $request->user()->id && ! $request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
 
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
@@ -168,7 +168,7 @@ class PostController extends Controller
 
     public function destroy(Request $request, Post $post)
     {
-        abort_if($post->user_id !== $request->user()->id && !$request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
+        abort_if($post->user_id !== $request->user()->id && ! $request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
 
         $post->delete();
 
@@ -227,7 +227,7 @@ class PostController extends Controller
     public function search(Request $request)
     {
         $query = $request->query('q', '');
-        
+
         if (empty(trim($query))) {
             return response()->json([]);
         }
@@ -235,11 +235,11 @@ class PostController extends Controller
         $posts = Post::with('category')
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->where(function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
-                  ->orWhere('description', 'like', "%{$query}%");
+                    ->orWhere('description', 'like', "%{$query}%");
             })
             ->latest()
             ->take(8)

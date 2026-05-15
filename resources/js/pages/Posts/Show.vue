@@ -106,7 +106,7 @@ const deletePost = () => {
 
                     <div v-if="!isVerified" class="space-y-4 text-center">
                         <p class="text-sm text-stone-600">Get verified for $1.00 to unlock communication features and help keep our community spam-free.</p>
-                        <Link href="/checkout" class="inline-flex w-full items-center justify-center rounded-full bg-emerald-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                        <Link :href="$page.props.auth.user ? '/checkout' : '/register'" class="inline-flex w-full items-center justify-center rounded-full bg-emerald-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
                             Get Verified Now
                         </Link>
                     </div>

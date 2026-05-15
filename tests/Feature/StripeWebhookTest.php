@@ -1,9 +1,9 @@
 <?php
 
+use App\Listeners\StripeEventListener;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Events\WebhookReceived;
-use App\Listeners\StripeEventListener;
 
 uses(RefreshDatabase::class);
 
@@ -23,7 +23,7 @@ it('updates user verification status when checkout.session.completed webhook is 
     ];
 
     $event = new WebhookReceived($payload);
-    $listener = new StripeEventListener();
+    $listener = new StripeEventListener;
     $listener->handle($event);
 
     $user->refresh();

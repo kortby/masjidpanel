@@ -13,7 +13,7 @@ class CategorySuggestionController extends Controller
     {
         // 1. Create the new category
         $slug = Str::slug($suggestion->suggested_name);
-        
+
         $category = Category::firstOrCreate(
             ['slug' => $slug],
             ['name' => $suggestion->suggested_name]

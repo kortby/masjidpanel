@@ -11,6 +11,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class Post extends Model implements HasMedia
 {
     use InteractsWithMedia;
+
     protected $fillable = [
         'user_id',
         'category_id',
@@ -40,8 +41,8 @@ class Post extends Model implements HasMedia
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
-              ->width(368)
-              ->height(232)
-              ->nonQueued();
+            ->width(368)
+            ->height(232)
+            ->nonQueued();
     }
 }

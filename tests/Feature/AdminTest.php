@@ -34,7 +34,7 @@ it('approves a category suggestion and reassigns the post', function () {
     $admin->assignRole('Super Admin');
 
     $category = Category::create(['name' => 'Other', 'slug' => 'other']);
-    
+
     $post = Post::create([
         'user_id' => $admin->id,
         'category_id' => $category->id,
@@ -54,7 +54,7 @@ it('approves a category suggestion and reassigns the post', function () {
     $response = $this->actingAs($admin)->post("/admin/suggestions/{$suggestion->id}/approve");
 
     $response->assertSessionHas('success');
-    
+
     $newCategory = Category::where('name', 'Tutoring')->first();
     expect($newCategory)->not->toBeNull();
 

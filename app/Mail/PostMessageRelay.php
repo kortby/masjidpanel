@@ -25,7 +25,7 @@ class PostMessageRelay extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Message regarding your post: ' . $this->post->title,
+            subject: 'New Message regarding your post: '.$this->post->title,
             replyTo: [
                 new Address($this->sender->email, $this->sender->name),
             ],
