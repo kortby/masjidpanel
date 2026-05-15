@@ -152,6 +152,10 @@ class PostController extends Controller
             'city' => 'required|string|max:255',
             'zip_code' => 'nullable|string|max:20',
             'meta' => 'nullable|array',
+            'images' => 'nullable|array|max:3',
+            'images.*' => 'image|max:5120',
+            'deleted_images' => 'nullable|array',
+            'deleted_images.*' => 'integer',
         ]);
 
         $post->update([
@@ -162,6 +166,20 @@ class PostController extends Controller
             'zip_code' => $validated['zip_code'] ?? null,
             'meta' => $validated['meta'] ?? null,
         ]);
+
+        if (!empty($validated['deleted_images'])) {
+            $post->media()->whereIn('id', $validated['deleted_images'])->delete();
+        }
+
+        if ($request->hasFile('images')) {
+            $currentCount = $post->media()->count();
+            foreach ($request->file('images') as $image) {
+                if ($currentCount < 3) {
+                    $post->addMedia($image)->toMediaCollection('images');
+                    $currentCount++;
+                }
+            }
+        }
 
         return redirect()->route('posts.show', $post)->with('success', 'Post updated successfully!');
     }

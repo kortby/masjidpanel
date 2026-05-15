@@ -42,6 +42,13 @@ const mainNavItems = [
             <div class="hidden items-center gap-4 md:flex">
                 <template v-if="auth.user">
                     <Link
+                        href="/settings/profile"
+                        class="text-sm font-medium text-emerald-100 transition-colors hover:text-amber-400"
+                    >
+                        Profile
+                    </Link>
+                    <Link
+                        v-if="auth.is_admin"
                         href="/admin/dashboard"
                         class="text-sm font-medium text-emerald-100 transition-colors hover:text-amber-400"
                     >
@@ -94,6 +101,13 @@ const mainNavItems = [
                 <div class="flex items-center px-5">
                     <template v-if="auth.user">
                         <Link
+                            href="/settings/profile"
+                            class="block rounded-md px-3 py-2 text-base font-medium text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                        >
+                            Profile
+                        </Link>
+                        <Link
+                            v-if="auth.is_admin"
                             href="/admin/dashboard"
                             class="block rounded-md px-3 py-2 text-base font-medium text-emerald-100 hover:bg-emerald-800 hover:text-white"
                         >

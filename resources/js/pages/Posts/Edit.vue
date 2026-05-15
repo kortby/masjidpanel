@@ -23,14 +23,34 @@ const form = useForm({
     city: props.post.city,
     zip_code: props.post.zip_code || '',
     meta: props.post.meta || {} as Record<string, string>,
+    images: [] as File[],
+    deleted_images: [] as number[],
+    _method: 'put',
 });
 
 const selectedCategory = computed(() => {
     return props.categories.find(c => c.id === form.category_id);
 });
 
+const toggleDeleteImage = (id: number) => {
+    if (form.deleted_images.includes(id)) {
+        form.deleted_images = form.deleted_images.filter(i => i !== id);
+    } else {
+        form.deleted_images.push(id);
+    }
+};
+
+const currentImageCount = computed(() => {
+    const existing = props.post.images ? props.post.images.filter((img: any) => !form.deleted_images.includes(img.id)).length : 0;
+    return existing + form.images.length;
+});
+
 const submit = () => {
-    form.put(`/posts/${props.post.id}`);
+    if (currentImageCount.value > 3) {
+        alert('You can only have up to 3 images total.');
+        return;
+    }
+    form.post(`/posts/${props.post.id}`);
 };
 </script>
 
@@ -100,6 +120,45 @@ const submit = () => {
                         <div class="space-y-2">
                             <label for="zip_code" class="block text-sm font-bold text-emerald-950">Zip Code (Optional)</label>
                             <input id="zip_code" v-model="form.zip_code" class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                        </div>
+
+                        <!-- Images Management -->
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold text-emerald-950">Images (Max 3 Total)</label>
+                            
+                            <!-- Existing Images -->
+                            <div v-if="props.post.images && props.post.images.length > 0" class="flex flex-wrap gap-4">
+                                <div v-for="image in props.post.images" :key="image.id" class="relative group">
+                                    <img :src="image.url" class="h-32 w-auto rounded-xl border border-stone-200 object-cover shadow-sm transition-all" :class="{'opacity-30 grayscale': form.deleted_images.includes(image.id)}" />
+                                    <button 
+                                        type="button" 
+                                        @click="toggleDeleteImage(image.id)" 
+                                        class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md transition-colors hover:bg-stone-100 focus:outline-none"
+                                        :class="form.deleted_images.includes(image.id) ? 'text-emerald-600' : 'text-red-500'"
+                                        :title="form.deleted_images.includes(image.id) ? 'Undo Remove' : 'Remove Image'"
+                                    >
+                                        <svg v-if="!form.deleted_images.includes(image.id)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- New Images -->
+                            <div class="space-y-2">
+                                <label for="images" class="block text-xs font-medium text-stone-500">Upload New Images</label>
+                                <input 
+                                    id="images" 
+                                    type="file" 
+                                    multiple 
+                                    accept="image/*" 
+                                    @change="e => { form.images = Array.from((e.target as HTMLInputElement).files || []) }" 
+                                    class="flex h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 file:mr-4 file:rounded-full file:border-0 file:bg-emerald-50 file:px-4 file:py-1 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                                />
+                                <p class="text-xs font-medium" :class="currentImageCount > 3 ? 'text-red-500' : 'text-stone-500'">
+                                    You have selected {{ currentImageCount }} image(s) total.
+                                </p>
+                                <p v-if="form.errors.images" class="text-sm font-medium text-red-500">{{ form.errors.images }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
