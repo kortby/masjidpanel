@@ -16,7 +16,7 @@ class RoleSeeder extends Seeder
         $superAdmin = Role::firstOrCreate(['name' => 'Super Admin']);
         $userRole = Role::firstOrCreate(['name' => 'User']);
 
-        $adminUser = User::where('email', 'superadmin@example.com')->first();
+        $adminUser = User::where('email', 'kortby@gmail.com')->first();
         if ($adminUser) {
             $adminUser->assignRole('Super Admin');
         }
