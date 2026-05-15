@@ -21,7 +21,7 @@ defineOptions({
         <div class="text-center mb-16">
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">Building Stronger Local Communities</h1>
             <p class="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                MasjidConnect was created to bridge the gap between community members. We provide a safe, secure, and hyper-local platform for Muslims to network, trade, and support one another.
+                MasjidPanel was created to bridge the gap between community members. We provide a safe, secure, and hyper-local platform for Muslims to network, trade, and support one another.
             </p>
         </div>
 
@@ -34,7 +34,7 @@ defineOptions({
                     </div>
                     <h3 class="text-xl font-bold mb-3">Hyper-Local Focus</h3>
                     <p class="text-muted-foreground">
-                        Everything on MasjidConnect is filtered by your city or zip code. Find exactly what you need, right where you live, and support your local neighbors.
+                        Everything on MasjidPanel is filtered by your city or zip code. Find exactly what you need, right where you live, and support your local neighbors.
                     </p>
                 </CardContent>
             </Card>

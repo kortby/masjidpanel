@@ -53,7 +53,7 @@ const submit = () => {
                             </div>
                             <div>
                                 <h3 class="font-bold">Email Us</h3>
-                                <p class="text-sm text-muted-foreground">support@masjidconnect.org</p>
+                                <p class="text-sm text-muted-foreground">support@masjidpanel.com</p>
                             </div>
                         </div>
                         

@@ -10,7 +10,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
     </div>
     <div class="ml-2 grid flex-1 text-left text-sm">
         <span class="mb-0.5 truncate leading-tight font-bold text-lg tracking-tight"
-            >Masjid<span class="text-primary">Connect</span></span
+            >Masjid<span class="text-primary">Panel</span></span
         >
     </div>
 </template>
