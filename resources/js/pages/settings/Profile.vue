@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 
@@ -80,6 +81,21 @@ const user = computed(() => page.props.auth.user);
                         placeholder="Email address"
                     />
                     <InputError class="mt-2" :message="errors.email" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="language">Language</Label>
+                    <Select name="language" :default-value="user.language || 'en'">
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="ar">Arabic</SelectItem>
+                            <SelectItem value="es">Spanish</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError class="mt-2" :message="errors.language" />
                 </div>
 
                 <div class="grid gap-2">

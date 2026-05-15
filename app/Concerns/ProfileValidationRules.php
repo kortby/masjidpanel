@@ -28,6 +28,7 @@ trait ProfileValidationRules
             'show_address' => ['boolean'],
             'show_phone' => ['boolean'],
             'show_email' => ['boolean'],
+            'language' => ['required', 'string', 'in:en,ar,es'],
         ];
     }
 

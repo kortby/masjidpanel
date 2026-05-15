@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\HandleLanguage;
 use App\Http\Middleware\HandleLocation;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: ['stripe/*', 'stripe/webhook']);
 
         $middleware->web(append: [
+            HandleLanguage::class,
             HandleLocation::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
