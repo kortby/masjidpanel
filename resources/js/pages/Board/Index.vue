@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import GuestHero from '@/components/GuestHero.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { 
     Search, MapPin, Briefcase, Home, Heart, Users, 
     ShoppingBag, GraduationCap, Wrench, Activity, Car, 
     Calendar, Globe, Plus, Hash
 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import GuestHero from '@/components/GuestHero.vue';
 
 const props = defineProps<{
     categories: any[];
@@ -57,27 +55,27 @@ const getCategoryIcon = (name: string) => {
 
     <GuestHero v-if="!$page.props.auth.user" />
 
-    <div class="px-4 py-12 max-w-7xl mx-auto w-full">
+    <div class="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <!-- Global Search Bar for Homepage -->
-        <div class="max-w-3xl mx-auto mb-16">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-center mb-8 tracking-tight">What are you looking for locally?</h1>
-            <form @submit.prevent="handleSearch" class="flex flex-col sm:flex-row gap-3">
+        <div class="mx-auto mb-16 max-w-3xl">
+            <h1 class="mb-8 text-center text-3xl font-extrabold tracking-tight text-emerald-950 md:text-4xl">What are you looking for locally?</h1>
+            <form @submit.prevent="handleSearch" class="flex flex-col gap-3 sm:flex-row">
                 <div class="relative w-full sm:w-1/3">
-                    <MapPin class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input 
+                    <MapPin class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600/60" />
+                    <input 
                         v-model="locationQuery" 
                         type="text" 
                         placeholder="City or Zip" 
-                        class="pl-12 bg-card h-14 border-muted-foreground/20 rounded-full text-base shadow-sm"
+                        class="h-14 w-full rounded-full border border-emerald-900/10 bg-white pl-12 text-base text-stone-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                 </div>
                 <div class="relative w-full sm:w-2/3">
-                    <Search class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input 
+                    <Search class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600/60" />
+                    <input 
                         v-model="searchQuery" 
                         type="search" 
                         placeholder="Search posts..." 
-                        class="pl-12 bg-card h-14 border-muted-foreground/20 rounded-full text-base shadow-sm"
+                        class="h-14 w-full rounded-full border border-emerald-900/10 bg-white pl-12 text-base text-stone-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                 </div>
                 <button type="submit" class="hidden"></button>
@@ -86,13 +84,13 @@ const getCategoryIcon = (name: string) => {
 
         <!-- Categories Grid -->
         <div>
-            <h2 class="text-xl font-bold tracking-tight mb-6 px-1">Browse Categories</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <h2 class="mb-6 px-1 text-xl font-bold tracking-tight text-emerald-900">Browse Categories</h2>
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                 <Link 
                     href="/feed" 
-                    class="group relative flex flex-col items-center justify-center p-4 h-36 bg-card border border-muted-foreground/10 rounded-3xl hover:border-primary hover:shadow-lg transition-all text-center"
+                    class="group relative flex h-36 flex-col items-center justify-center rounded-3xl border border-emerald-900/10 bg-white p-4 text-center text-stone-700 shadow-sm transition-all hover:border-amber-400 hover:shadow-md"
                 >
-                    <div class="p-4 rounded-full bg-primary/10 text-primary mb-3 group-hover:scale-110 transition-transform">
+                    <div class="mb-3 rounded-full bg-emerald-50 p-4 text-emerald-700 transition-transform group-hover:scale-110">
                         <Hash class="h-6 w-6" />
                     </div>
                     <span class="text-sm font-medium leading-tight">All Categories</span>
@@ -102,13 +100,13 @@ const getCategoryIcon = (name: string) => {
                     v-for="category in categories" 
                     :key="category.id"
                     :href="`/feed?category_id=${category.id}`"
-                    class="group relative flex flex-col items-center justify-center p-4 h-36 bg-card border border-muted-foreground/10 rounded-3xl hover:border-primary hover:shadow-lg transition-all text-center"
+                    class="group relative flex h-36 flex-col items-center justify-center rounded-3xl border border-emerald-900/10 bg-white p-4 text-center text-stone-700 shadow-sm transition-all hover:border-amber-400 hover:shadow-md"
                 >
-                    <div class="p-4 rounded-full bg-primary/10 text-primary mb-3 group-hover:scale-110 transition-transform">
+                    <div class="mb-3 rounded-full bg-emerald-50 p-4 text-emerald-700 transition-transform group-hover:scale-110">
                         <component :is="getCategoryIcon(category.name)" class="h-6 w-6" />
                     </div>
                     <span class="text-sm font-medium leading-tight">{{ category.name.replace(' (Suggest a Category)', '') }}</span>
-                    <Badge variant="secondary" class="absolute top-3 right-3 px-1.5 min-w-[22px] h-5 flex items-center justify-center rounded-full text-[10px] shadow-sm">{{ category.posts_count }}</Badge>
+                    <span class="absolute right-3 top-3 flex min-w-[22px] items-center justify-center rounded-full bg-stone-100 px-1.5 py-0.5 text-[10px] font-bold text-stone-600 shadow-sm group-hover:bg-amber-100 group-hover:text-amber-800">{{ category.posts_count }}</span>
                 </Link>
             </div>
         </div>

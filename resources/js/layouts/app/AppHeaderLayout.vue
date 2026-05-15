@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
+import { watch } from 'vue';
+import { toast } from 'vue-sonner';
 import AppContent from '@/components/AppContent.vue';
 import AppHeader from '@/components/AppHeader.vue';
 import AppShell from '@/components/AppShell.vue';
 import { Toaster } from '@/components/ui/sonner';
-import { usePage } from '@inertiajs/vue3';
-import { watch } from 'vue';
-import { toast } from 'vue-sonner';
 import type { BreadcrumbItem } from '@/types';
 
 type Props = {
@@ -24,6 +24,7 @@ watch(
         if (flash?.success) {
             toast.success(flash.success);
         }
+
         if (flash?.error) {
             toast.error(flash.error);
         }

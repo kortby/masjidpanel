@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Button } from '@/components/ui/button';
 import { ShieldCheck, MapPin, Users } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 </script>
 
 <template>

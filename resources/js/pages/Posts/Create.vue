@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { ref, computed } from 'vue';
 
 const props = defineProps<{
     categories: any[];
@@ -42,8 +38,14 @@ const isOtherCategory = computed(() => {
 });
 
 const nextStep = () => {
-    if (step.value === 1 && !form.category_id) return;
-    if (step.value === 2 && (!form.title || !form.description)) return;
+    if (step.value === 1 && !form.category_id) {
+return;
+}
+
+    if (step.value === 2 && (!form.title || !form.description)) {
+return;
+}
+
     step.value++;
 };
 
@@ -63,27 +65,27 @@ const submit = () => {
 <template>
     <Head title="Create Post" />
 
-    <div class="flex items-center justify-center p-4 min-h-full">
+    <div class="mx-auto flex min-h-[calc(100vh-4rem)] w-full items-center justify-center p-4 sm:p-6 lg:p-8">
         <div class="w-full max-w-2xl">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Create a New Post</CardTitle>
-                    <CardDescription>Step {{ step }} of 3: {{ step === 1 ? 'Select Category' : (step === 2 ? 'Post Details' : 'Location & Review') }}</CardDescription>
-                </CardHeader>
+            <div class="overflow-hidden rounded-3xl border border-emerald-900/10 bg-white shadow-sm">
+                <div class="border-b border-emerald-900/10 px-6 py-8 sm:px-8">
+                    <h2 class="text-2xl font-bold tracking-tight text-emerald-950">Create a New Post</h2>
+                    <p class="mt-2 text-sm text-stone-500">Step {{ step }} of 3: {{ step === 1 ? 'Select Category' : (step === 2 ? 'Post Details' : 'Location & Review') }}</p>
+                </div>
                 
-                <CardContent>
+                <div class="px-6 py-8 sm:px-8">
                     <!-- Step 1: Category -->
                     <div v-if="step === 1" class="space-y-4">
-                        <Label>Select a Category</Label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="block text-sm font-bold text-emerald-950">Select a Category</label>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div 
                                 v-for="category in categories" 
                                 :key="category.id"
                                 @click="form.category_id = category.id"
-                                class="p-4 rounded-xl border cursor-pointer transition-all"
-                                :class="form.category_id === category.id ? 'border-primary bg-primary/5 ring-2 ring-primary ring-offset-2' : 'hover:border-primary/50 hover:bg-muted'"
+                                class="cursor-pointer rounded-2xl border p-4 transition-all"
+                                :class="form.category_id === category.id ? 'border-emerald-500 bg-emerald-50 shadow-sm ring-1 ring-emerald-500' : 'border-stone-200 hover:border-emerald-300 hover:bg-stone-50'"
                             >
-                                <span class="font-medium text-sm">{{ category.name }}</span>
+                                <span class="text-sm font-semibold" :class="form.category_id === category.id ? 'text-emerald-900' : 'text-stone-700'">{{ category.name }}</span>
                             </div>
                         </div>
                     </div>
@@ -91,34 +93,34 @@ const submit = () => {
                     <!-- Step 2: Details -->
                     <div v-if="step === 2" class="space-y-6">
                         <div v-if="isOtherCategory" class="space-y-2">
-                            <Label for="suggested_name">Suggest Category Name <span class="text-destructive">*</span></Label>
-                            <Input id="suggested_name" v-model="form.suggested_category_name" placeholder="e.g. Lost & Found" required />
-                            <p class="text-xs text-muted-foreground">This suggestion will be reviewed by admins.</p>
+                            <label for="suggested_name" class="block text-sm font-bold text-emerald-950">Suggest Category Name <span class="text-red-500">*</span></label>
+                            <input id="suggested_name" v-model="form.suggested_category_name" placeholder="e.g. Lost & Found" required class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                            <p class="text-xs text-stone-500">This suggestion will be reviewed by admins.</p>
                         </div>
 
                         <div class="space-y-2">
-                            <Label for="title">Title <span class="text-destructive">*</span></Label>
-                            <Input id="title" v-model="form.title" placeholder="Give your post a clear title" required />
-                            <p v-if="form.errors.title" class="text-sm text-destructive">{{ form.errors.title }}</p>
+                            <label for="title" class="block text-sm font-bold text-emerald-950">Title <span class="text-red-500">*</span></label>
+                            <input id="title" v-model="form.title" placeholder="Give your post a clear title" required class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                            <p v-if="form.errors.title" class="text-sm font-medium text-red-500">{{ form.errors.title }}</p>
                         </div>
 
                         <div class="space-y-2">
-                            <Label for="description">Description <span class="text-destructive">*</span></Label>
+                            <label for="description" class="block text-sm font-bold text-emerald-950">Description <span class="text-red-500">*</span></label>
                             <textarea 
                                 id="description" 
                                 v-model="form.description" 
                                 rows="5" 
-                                class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                class="flex w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder="Describe what you're offering or looking for..."
                                 required
                             ></textarea>
-                            <p v-if="form.errors.description" class="text-sm text-destructive">{{ form.errors.description }}</p>
+                            <p v-if="form.errors.description" class="text-sm font-medium text-red-500">{{ form.errors.description }}</p>
                         </div>
 
                         <!-- Dynamic Meta Fields -->
                         <div v-if="selectedCategory?.name === 'Jobs & Hiring'" class="space-y-2">
-                            <Label for="job_type">Job Type</Label>
-                            <select id="job_type" v-model="form.meta.job_type" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                            <label for="job_type" class="block text-sm font-bold text-emerald-950">Job Type</label>
+                            <select id="job_type" v-model="form.meta.job_type" class="flex h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-1 text-sm text-stone-900 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                 <option value="" disabled>Select type...</option>
                                 <option value="Full-Time">Full-Time</option>
                                 <option value="Part-Time">Part-Time</option>
@@ -128,40 +130,41 @@ const submit = () => {
 
                         <!-- Images Upload -->
                         <div class="space-y-2">
-                            <Label for="images">Images (Max 3)</Label>
-                            <Input 
+                            <label for="images" class="block text-sm font-bold text-emerald-950">Images (Max 3)</label>
+                            <input 
                                 id="images" 
                                 type="file" 
                                 multiple 
                                 accept="image/*" 
                                 @change="e => { form.images = Array.from((e.target as HTMLInputElement).files || []).slice(0, 3) }" 
+                                class="flex h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 file:mr-4 file:rounded-full file:border-0 file:bg-emerald-50 file:px-4 file:py-1 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
                             />
-                            <p class="text-xs text-muted-foreground">You can upload up to 3 images to showcase your post.</p>
-                            <p v-if="form.errors.images" class="text-sm text-destructive">{{ form.errors.images }}</p>
+                            <p class="text-xs text-stone-500">You can upload up to 3 images to showcase your post.</p>
+                            <p v-if="form.errors.images" class="text-sm font-medium text-red-500">{{ form.errors.images }}</p>
                         </div>
                     </div>
 
                     <!-- Step 3: Location -->
                     <div v-if="step === 3" class="space-y-6">
                         <div class="space-y-2">
-                            <Label for="city">City <span class="text-destructive">*</span></Label>
-                            <Input id="city" v-model="form.city" placeholder="e.g. Seattle" required />
-                            <p class="text-xs text-muted-foreground">This dictates where your post will appear on the local board.</p>
-                            <p v-if="form.errors.city" class="text-sm text-destructive">{{ form.errors.city }}</p>
+                            <label for="city" class="block text-sm font-bold text-emerald-950">City <span class="text-red-500">*</span></label>
+                            <input id="city" v-model="form.city" placeholder="e.g. Seattle" required class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                            <p class="text-xs text-stone-500">This dictates where your post will appear on the local board.</p>
+                            <p v-if="form.errors.city" class="text-sm font-medium text-red-500">{{ form.errors.city }}</p>
                         </div>
                         <div class="space-y-2">
-                            <Label for="zip_code">Zip Code (Optional)</Label>
-                            <Input id="zip_code" v-model="form.zip_code" placeholder="e.g. 98101" />
+                            <label for="zip_code" class="block text-sm font-bold text-emerald-950">Zip Code (Optional)</label>
+                            <input id="zip_code" v-model="form.zip_code" placeholder="e.g. 98101" class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
                         </div>
                     </div>
-                </CardContent>
+                </div>
 
-                <CardFooter class="flex justify-between">
-                    <Button variant="outline" @click="prevStep" :disabled="step === 1">Back</Button>
-                    <Button v-if="step < 3" @click="nextStep">Next</Button>
-                    <Button v-if="step === 3" @click="submit" :disabled="form.processing">Post to Board</Button>
-                </CardFooter>
-            </Card>
+                <div class="flex items-center justify-between border-t border-emerald-900/10 bg-stone-50 px-6 py-4 sm:px-8">
+                    <button @click="prevStep" :disabled="step === 1" class="rounded-full px-6 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200 hover:text-stone-900 disabled:pointer-events-none disabled:opacity-50">Back</button>
+                    <button v-if="step < 3" @click="nextStep" class="rounded-full bg-emerald-800 px-8 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">Next</button>
+                    <button v-if="step === 3" @click="submit" :disabled="form.processing" class="rounded-full bg-amber-500 px-8 py-2 text-sm font-bold text-amber-950 transition-colors hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">Post to Board</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>

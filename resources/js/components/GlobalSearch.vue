@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { Search, Home, LayoutGrid, Info, Mail, SearchCode } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { Button } from '@/components/ui/button'
 import {
   CommandDialog,
   CommandEmpty,
@@ -11,7 +12,6 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { Button } from '@/components/ui/button'
 
 const props = defineProps<{
     open: boolean;
@@ -31,9 +31,12 @@ watch(() => props.open, (val) => {
 
 watch(isOpen, (val) => {
     emit('update:open', val);
+
     if (!val) {
         // Reset search query when closing
-        setTimeout(() => { searchQuery.value = ''; }, 200);
+        setTimeout(() => {
+ searchQuery.value = ''; 
+}, 200);
     }
 });
 
@@ -56,15 +59,19 @@ onUnmounted(() => {
 watch(searchQuery, (newVal) => {
     if (!newVal.trim()) {
         searchResults.value = [];
+
         return;
     }
     
-    if (searchTimeout) clearTimeout(searchTimeout);
+    if (searchTimeout) {
+clearTimeout(searchTimeout);
+}
     
     isSearching.value = true;
     searchTimeout = setTimeout(async () => {
         try {
             const res = await fetch(`/api/posts/search?q=${encodeURIComponent(newVal.trim())}`);
+
             if (res.ok) {
                 searchResults.value = await res.json();
             }
