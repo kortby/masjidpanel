@@ -30,6 +30,27 @@ const form = useForm({
     _method: 'put',
 });
 
+const zipError = ref('');
+
+const validateZip = () => {
+    if (!form.zip_code) {
+        zipError.value = '';
+        return true;
+    }
+    const isValid = /^\d{5}(-\d{4})?$/.test(form.zip_code);
+    zipError.value = isValid ? '' : 'Please enter a valid 5-digit US zip code (e.g. 92123).';
+    return isValid;
+};
+
+const clearZipError = () => {
+    if (zipError.value || form.errors.zip_code) {
+        if (/^\d{5}(-\d{4})?$/.test(form.zip_code)) {
+            zipError.value = '';
+            form.clearErrors('zip_code');
+        }
+    }
+};
+
 const selectedCategory = computed(() => {
     return props.categories.find(c => c.id === form.category_id);
 });
@@ -48,6 +69,8 @@ const currentImageCount = computed(() => {
 });
 
 const submit = () => {
+    if (!validateZip()) return;
+
     if (currentImageCount.value > 3) {
         alert('You can only have up to 3 images total.');
         return;
@@ -128,8 +151,22 @@ const submit = () => {
 
                         <div class="space-y-2">
                             <label for="zip_code" class="block text-sm font-bold text-emerald-950">Zip Code (Optional)</label>
-                            <input id="zip_code" v-model="form.zip_code" pattern="^\d{5}(-\d{4})?$" title="Please enter a valid 5-digit US zip code (e.g. 92123)" class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
-                            <p v-if="form.errors.zip_code" class="text-sm font-medium text-red-500">{{ form.errors.zip_code }}</p>
+                            <input 
+                                id="zip_code" 
+                                v-model="form.zip_code" 
+                                @blur="validateZip"
+                                @input="clearZipError"
+                                placeholder="e.g. 98101" 
+                                :class="[
+                                    'h-10 w-full rounded-xl border bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-1 transition-colors',
+                                    (zipError || form.errors.zip_code)
+                                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50/50'
+                                        : 'border-stone-200 focus:border-emerald-500 focus:ring-emerald-500'
+                                ]"
+                            />
+                            <p v-if="zipError || form.errors.zip_code" class="text-sm font-medium text-red-500">
+                                {{ zipError || form.errors.zip_code }}
+                            </p>
                         </div>
 
                         <!-- Images Management -->

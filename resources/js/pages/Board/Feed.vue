@@ -22,7 +22,27 @@ defineOptions({
 
 const searchQuery = ref(props.filters.search || '');
 const locationQuery = ref(props.filters.location || '');
+const locationError = ref('');
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const validateLocation = () => {
+    const loc = locationQuery.value.trim();
+    if (!loc) {
+        locationError.value = '';
+        return true;
+    }
+    const isValid = /^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$/.test(loc);
+    locationError.value = isValid ? '' : 'Please enter a valid 5-digit zip code or city name.';
+    return isValid;
+};
+
+const clearLocationError = () => {
+    if (locationError.value) {
+        if (/^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$/.test(locationQuery.value.trim())) {
+            locationError.value = '';
+        }
+    }
+};
 
 const triggerSearch = () => {
     if (searchTimeout) {
@@ -30,9 +50,14 @@ const triggerSearch = () => {
     }
 
     const loc = locationQuery.value.trim();
-    if (/^\d+$/.test(loc) && !/^\d{5}(-\d{4})?$/.test(loc)) {
-        return; // Don't auto-search if user is halfway through typing a zipcode
+    
+    // Don't auto-search if user is halfway through typing an invalid zipcode
+    if (!/^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$/.test(loc) && loc !== '') {
+        return; 
     }
+    
+    // Clear any error when auto-searching
+    locationError.value = '';
     
     searchTimeout = setTimeout(() => {
         router.get('/feed', { 
@@ -87,12 +112,18 @@ return null;
                     <MapPin class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600/60" />
                     <input 
                         v-model="locationQuery" 
+                        @blur="validateLocation"
+                        @input="clearLocationError"
                         type="text" 
                         placeholder="City or Zip" 
-                        pattern="^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$"
-                        title="Please enter a valid 5-digit zip code or a city name"
-                        class="h-10 w-full rounded-full border border-emerald-900/10 bg-white pl-9 text-sm text-stone-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        :class="[
+                            'h-10 w-full rounded-full border bg-white pl-9 text-sm text-stone-900 shadow-sm transition-colors focus:outline-none focus:ring-1',
+                            locationError 
+                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50/30' 
+                                : 'border-emerald-900/10 focus:border-emerald-500 focus:ring-emerald-500'
+                        ]"
                     />
+                    <p v-if="locationError" class="absolute -bottom-6 left-3 text-[10px] font-medium text-red-500 whitespace-nowrap">{{ locationError }}</p>
                 </div>
                 <div class="relative w-full sm:w-64">
                     <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600/60" />

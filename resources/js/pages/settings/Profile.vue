@@ -34,6 +34,35 @@ defineOptions({
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+
+const zipError = ref('');
+const zipValue = ref(user.value.zip_code || '');
+
+const validateZip = () => {
+    if (!zipValue.value) {
+        zipError.value = '';
+        return true;
+    }
+    const isValid = /^\d{5}(-\d{4})?$/.test(zipValue.value);
+    zipError.value = isValid ? '' : 'Please enter a valid 5-digit US zip code (e.g. 92123).';
+    return isValid;
+};
+
+const handleZipInput = (e: Event) => {
+    zipValue.value = (e.target as HTMLInputElement).value;
+    if (zipError.value) {
+        if (/^\d{5}(-\d{4})?$/.test(zipValue.value)) {
+            zipError.value = '';
+        }
+    }
+};
+
+const handleSubmit = (e: Event) => {
+    if (!validateZip()) {
+        e.preventDefault();
+        return;
+    }
+};
 </script>
 
 <template>
@@ -52,6 +81,7 @@ const user = computed(() => page.props.auth.user);
             v-bind="ProfileController.update.form()"
             class="space-y-8"
             v-slot="{ errors, processing }"
+            @submit="handleSubmit"
         >
             <div class="grid gap-6 md:grid-cols-2">
                 <div class="grid gap-2">
@@ -153,14 +183,18 @@ const user = computed(() => page.props.auth.user);
                     <Label for="zip_code">Zip Code</Label>
                     <Input
                         id="zip_code"
-                        class="mt-1 block w-full"
+                        :class="[
+                            'mt-1 block w-full transition-colors',
+                            (zipError || errors.zip_code) ? 'border-red-500 focus-visible:ring-red-500 bg-red-50/50' : ''
+                        ]"
                         name="zip_code"
                         :default-value="user.zip_code"
+                        @blur="validateZip"
+                        @input="handleZipInput"
                         placeholder="98101"
-                        pattern="^\d{5}(-\d{4})?$"
-                        title="Please enter a valid 5-digit US zip code (e.g. 92123)"
                     />
-                    <InputError class="mt-2" :message="errors.zip_code" />
+                    <p v-if="zipError" class="mt-2 text-sm font-medium text-red-500">{{ zipError }}</p>
+                    <InputError v-else class="mt-2" :message="errors.zip_code" />
                 </div>
             </div>
 

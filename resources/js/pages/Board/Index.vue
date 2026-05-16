@@ -23,8 +23,30 @@ defineOptions({
 
 const searchQuery = ref('');
 const locationQuery = ref(props.filters.location || '');
+const locationError = ref('');
+
+const validateLocation = () => {
+    const loc = locationQuery.value.trim();
+    if (!loc) {
+        locationError.value = '';
+        return true;
+    }
+    const isValid = /^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$/.test(loc);
+    locationError.value = isValid ? '' : 'Please enter a valid 5-digit zip code or city name.';
+    return isValid;
+};
+
+const clearLocationError = () => {
+    if (locationError.value) {
+        if (/^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$/.test(locationQuery.value.trim())) {
+            locationError.value = '';
+        }
+    }
+};
 
 const handleSearch = () => {
+    if (!validateLocation()) return;
+    
     router.get('/feed', { 
         search: searchQuery.value,
         location: locationQuery.value
@@ -64,12 +86,18 @@ const getCategoryIcon = (name: string) => {
                     <MapPin class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600/60" />
                     <input 
                         v-model="locationQuery" 
+                        @blur="validateLocation"
+                        @input="clearLocationError"
                         type="text" 
                         placeholder="City or Zip" 
-                        pattern="^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$"
-                        title="Please enter a valid 5-digit zip code or a city name"
-                        class="h-14 w-full rounded-full border border-emerald-900/10 bg-white pl-12 text-base text-stone-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        :class="[
+                            'h-14 w-full rounded-full border bg-white pl-12 text-base text-stone-900 shadow-sm transition-colors focus:outline-none focus:ring-1',
+                            locationError 
+                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50/30' 
+                                : 'border-emerald-900/10 focus:border-emerald-500 focus:ring-emerald-500'
+                        ]"
                     />
+                    <p v-if="locationError" class="absolute -bottom-6 left-4 text-xs font-medium text-red-500 whitespace-nowrap">{{ locationError }}</p>
                 </div>
                 <div class="relative w-full sm:w-2/3">
                     <Search class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600/60" />
