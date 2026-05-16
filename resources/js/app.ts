@@ -18,7 +18,7 @@ createInertiaApp({
             case name === 'Contact':
             case name.startsWith('Board/'):
             case name.startsWith('Posts/'):
-            case name.startsWith('Profile/Public'):
+            case name.startsWith('Profile/'):
                 return PublicLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;

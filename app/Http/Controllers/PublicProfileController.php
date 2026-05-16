@@ -18,6 +18,7 @@ class PublicProfileController extends Controller
             'name' => $user->name,
             'is_verified' => $user->is_verified,
             'joined_at' => $user->created_at,
+            'posts_count' => $user->posts->count(),
             'age' => $user->show_age ? $user->age : null,
             'city' => $user->show_location ? $user->city : null,
             'zip_code' => $user->show_location ? $user->zip_code : null,

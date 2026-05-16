@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { 
-    Search, MapPin, Image as ImageIcon, ChevronLeft, X
+    Search, MapPin, Image as ImageIcon, ChevronLeft, X, SlidersHorizontal
 } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 const props = defineProps<{
     categories: any[];
@@ -139,8 +146,40 @@ return null;
                         Create Post
                     </button>
                 </Link>
-                <button type="submit" class="hidden"></button>
+            <button type="submit" class="hidden"></button>
             </form>
+        </div>
+
+        <!-- Category Filter Dropdown -->
+        <div class="mb-8 flex items-center gap-3">
+            <div class="flex items-center gap-2 text-sm font-medium text-stone-500">
+                <SlidersHorizontal class="h-4 w-4" />
+                <span class="hidden sm:inline">Filter:</span>
+            </div>
+            <Select
+                :model-value="filters.category_id ? String(filters.category_id) : 'all'"
+                @update:model-value="(val: string) => {
+                    const params: any = { search: filters.search, location: filters.location, tag: filters.tag };
+                    if (val !== 'all') params.category_id = val;
+                    router.get('/feed', params, { preserveState: true, preserveScroll: true, replace: true });
+                }"
+            >
+                <SelectTrigger class="h-10 w-full rounded-full border-emerald-900/10 bg-white text-sm shadow-sm sm:w-64">
+                    <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent class="rounded-xl">
+                    <SelectItem value="all">
+                        All Categories
+                    </SelectItem>
+                    <SelectItem
+                        v-for="category in categories"
+                        :key="category.id"
+                        :value="String(category.id)"
+                    >
+                        {{ category.name }} ({{ category.posts_count }})
+                    </SelectItem>
+                </SelectContent>
+            </Select>
         </div>
 
         <div class="space-y-6">
