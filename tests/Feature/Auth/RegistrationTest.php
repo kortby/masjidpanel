@@ -24,3 +24,16 @@ test('new users can register', function () {
     $this->assertAuthenticated();
     $response->assertRedirect(route('profile.edit', absolute: false));
 });
+
+test('registration requires a language field', function () {
+    $response = $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        // language intentionally omitted
+    ]);
+
+    $response->assertSessionHasErrors(['language']);
+    $this->assertGuest();
+});

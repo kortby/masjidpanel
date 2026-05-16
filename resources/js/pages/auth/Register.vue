@@ -39,6 +39,8 @@ defineOptions({
                 </Button>
             </a>
             
+            <input type="hidden" name="language" value="en" />
+            
             <div class="relative">
                 <div class="absolute inset-0 flex items-center">
                     <span class="w-full border-t"></span>
