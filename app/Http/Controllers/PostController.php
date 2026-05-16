@@ -38,8 +38,11 @@ class PostController extends Controller
                 $postsQuery->selectRaw('(posts.zip_code = ?) as is_local', [$city])
                     ->orderByRaw('CASE WHEN posts.zip_code = ? THEN 0 ELSE 1 END', [$city]);
                 
-                if (config('database.default') === 'pgsql') {
+                $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+                if ($driver === 'pgsql') {
                     $postsQuery->orderByRaw('ABS(CAST(NULLIF(regexp_replace(posts.zip_code, \'[^0-9]\', \'\', \'g\'), \'\') AS INTEGER) - ?) ASC', [(int) $city]);
+                } elseif ($driver === 'mysql') {
+                    $postsQuery->orderByRaw('ABS(CAST(NULLIF(posts.zip_code, \'\') AS SIGNED) - ?) ASC', [(int) $city]);
                 } else {
                     $postsQuery->orderByRaw('ABS(CAST(NULLIF(posts.zip_code, \'\') AS INTEGER) - ?) ASC', [(int) $city]);
                 }
