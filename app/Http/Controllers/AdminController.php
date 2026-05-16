@@ -45,6 +45,7 @@ class AdminController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'is_verified' => (bool) $user->is_verified,
+                'banned_at' => $user->banned_at,
                 'posts_count' => $user->posts_count,
                 'created_at' => $user->created_at,
             ]);
@@ -78,6 +79,59 @@ class AdminController extends Controller
         $user->delete();
 
         return redirect()->back()->with('success', 'User and all associated posts have been deleted.');
+    }
+
+    public function blockUser(User $user)
+    {
+        if ($user->hasRole('Super Admin')) {
+            return redirect()->back()->with('error', 'Cannot block Super Admin accounts.');
+        }
+
+        $user->update(['banned_at' => now()]);
+
+        \App\Models\BannedIdentifier::firstOrCreate([
+            'type' => 'email',
+            'value' => $user->email,
+        ], ['user_id' => $user->id]);
+
+        if ($user->device_id) {
+            \App\Models\BannedIdentifier::firstOrCreate([
+                'type' => 'device_cookie',
+                'value' => $user->device_id,
+            ], ['user_id' => $user->id]);
+        }
+
+        if ($user->phone_number) {
+            \App\Models\BannedIdentifier::firstOrCreate([
+                'type' => 'phone_number',
+                'value' => $user->phone_number,
+            ], ['user_id' => $user->id]);
+        }
+
+        try {
+            $fingerprints = $user->paymentMethods()->map(fn ($pm) => $pm->card->fingerprint ?? null)->filter()->unique();
+            foreach ($fingerprints as $fingerprint) {
+                \App\Models\BannedIdentifier::firstOrCreate([
+                    'type' => 'stripe_fingerprint',
+                    'value' => $fingerprint,
+                ], ['user_id' => $user->id]);
+            }
+            
+            $user->subscriptions->each->cancelNow();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to block Stripe fingerprints for user {$user->id}: " . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'User has been permanently blocked.');
+    }
+
+    public function unblockUser(User $user)
+    {
+        $user->update(['banned_at' => null]);
+        
+        \App\Models\BannedIdentifier::where('user_id', $user->id)->delete();
+
+        return redirect()->back()->with('success', 'User has been unblocked.');
     }
 
     public function storeCategory(Request $request)

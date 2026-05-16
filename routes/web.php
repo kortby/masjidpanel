@@ -50,6 +50,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('/users/{user}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
         Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+        Route::post('/users/{user}/block', [AdminController::class, 'blockUser'])->name('users.block');
+        Route::post('/users/{user}/unblock', [AdminController::class, 'unblockUser'])->name('users.unblock');
 
         Route::post('/categories', [AdminController::class, 'storeCategory'])->name('categories.store');
         Route::put('/categories/{category}', [AdminController::class, 'updateCategory'])->name('categories.update');

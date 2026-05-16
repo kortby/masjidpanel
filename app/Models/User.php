@@ -13,7 +13,7 @@ use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar', 'city', 'zip_code', 'phone_number', 'show_phone', 'show_email', 'is_verified', 'age', 'address', 'show_age', 'show_location', 'show_address', 'language'])]
+#[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar', 'city', 'zip_code', 'phone_number', 'show_phone', 'show_email', 'is_verified', 'age', 'address', 'show_age', 'show_location', 'show_address', 'language', 'device_id', 'banned_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -38,6 +38,7 @@ class User extends Authenticatable
             'show_age' => 'boolean',
             'show_location' => 'boolean',
             'show_address' => 'boolean',
+            'banned_at' => 'datetime',
         ];
     }
 

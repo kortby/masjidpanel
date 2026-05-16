@@ -70,6 +70,18 @@ const deleteUser = (id: number) => {
     }
 };
 
+const blockUser = (id: number) => {
+    if (confirm('Are you sure you want to permanently block this user? They will not be able to register again.')) {
+        router.post(`/admin/users/${id}/block`, {}, { preserveScroll: true });
+    }
+};
+
+const unblockUser = (id: number) => {
+    if (confirm('Are you sure you want to unblock this user?')) {
+        router.post(`/admin/users/${id}/unblock`, {}, { preserveScroll: true });
+    }
+};
+
 // Category CRUD
 const categoryForm = useForm({ name: '' });
 const editingCategoryId = ref<number | null>(null);
@@ -288,15 +300,24 @@ const deleteMessage = (id: number) => {
                                         <TableCell class="font-medium">{{ user.name }}</TableCell>
                                         <TableCell class="hidden sm:table-cell">{{ user.email }}</TableCell>
                                         <TableCell>
-                                            <Badge v-if="user.is_verified" variant="default" class="bg-green-600 hover:bg-green-700">Verified</Badge>
-                                            <Badge v-else variant="outline">Unverified</Badge>
+                                            <div class="flex flex-col gap-1">
+                                                <Badge v-if="user.banned_at" variant="destructive" class="w-fit">Blocked</Badge>
+                                                <Badge v-else-if="user.is_verified" variant="default" class="w-fit bg-green-600 hover:bg-green-700">Verified</Badge>
+                                                <Badge v-else variant="outline" class="w-fit">Unverified</Badge>
+                                            </div>
                                         </TableCell>
                                         <TableCell class="hidden md:table-cell">{{ user.posts_count }}</TableCell>
                                         <TableCell class="hidden lg:table-cell">{{ new Date(user.created_at).toLocaleDateString() }}</TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex items-center justify-end gap-2">
-                                                <Button v-if="!user.is_verified" size="sm" variant="outline" @click="verifyUser(user.id)">
+                                                <Button v-if="!user.is_verified && !user.banned_at" size="sm" variant="outline" @click="verifyUser(user.id)">
                                                     Verify
+                                                </Button>
+                                                <Button v-if="user.banned_at" size="sm" variant="outline" @click="unblockUser(user.id)">
+                                                    Unblock
+                                                </Button>
+                                                <Button v-else size="sm" variant="outline" class="border-destructive text-destructive hover:bg-destructive/10" @click="blockUser(user.id)">
+                                                    Block
                                                 </Button>
                                                 <Button size="sm" variant="destructive" @click="deleteUser(user.id)">
                                                     Delete
