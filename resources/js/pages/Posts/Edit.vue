@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import TagsInput from '@/components/TagsInput.vue';
 
 const props = defineProps<{
     categories: any[];
@@ -23,6 +24,7 @@ const form = useForm({
     city: props.post.city,
     zip_code: props.post.zip_code || '',
     meta: props.post.meta || {} as Record<string, string>,
+    tags: props.post.tags || [] as string[],
     images: [] as File[],
     deleted_images: [] as number[],
     _method: 'put',
@@ -98,6 +100,13 @@ const submit = () => {
                                 required
                             ></textarea>
                             <p v-if="form.errors.description" class="text-sm font-medium text-red-500">{{ form.errors.description }}</p>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-bold text-emerald-950">Tags</label>
+                            <TagsInput v-model="form.tags" placeholder="e.g. urgent, discount" />
+                            <p v-if="form.errors.tags" class="text-sm font-medium text-red-500">{{ form.errors.tags }}</p>
                         </div>
 
                         <!-- Dynamic Meta Fields -->

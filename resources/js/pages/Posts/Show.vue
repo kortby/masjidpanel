@@ -57,10 +57,21 @@ const deletePost = () => {
                             Posted by <Link :href="`/users/${post.author_id}`" class="font-medium text-emerald-700 transition-colors hover:text-emerald-800 hover:underline">{{ post.author_name }}</Link> in {{ post.city }}<span v-if="post.zip_code">, {{ post.zip_code }}</span>
                         </p>
                         
-                        <div v-if="post.meta" class="mb-8 flex flex-wrap gap-2">
+                        <div v-if="post.meta" class="mb-4 flex flex-wrap gap-2">
                             <span v-for="(value, key) in post.meta" :key="key" class="inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-xs font-medium capitalize text-stone-700">
-                                {{ key.replace('_', ' ') }}: {{ value }}
+                                {{ String(key).replace('_', ' ') }}: {{ value }}
                             </span>
+                        </div>
+
+                        <div v-if="post.tags && post.tags.length > 0" class="mb-8 flex flex-wrap gap-2">
+                            <Link 
+                                v-for="tag in post.tags" 
+                                :key="tag.id" 
+                                :href="`/feed?tag=${tag.slug}`"
+                                class="inline-flex items-center rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-800 transition-colors hover:bg-emerald-200"
+                            >
+                                #{{ tag.name }}
+                            </Link>
                         </div>
 
                         <div class="prose prose-stone max-w-none prose-p:leading-relaxed prose-a:text-emerald-700 hover:prose-a:text-emerald-800">

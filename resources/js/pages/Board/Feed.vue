@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { 
-    Search, MapPin, Image as ImageIcon, ChevronLeft
+    Search, MapPin, Image as ImageIcon, ChevronLeft, X
 } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
 
 const props = defineProps<{
     categories: any[];
-    posts: any;
+    posts: { data: any[], [key: string]: any };
     filters: any;
 }>();
 
@@ -66,6 +66,12 @@ return null;
         <!-- Search & Feed Section -->
         <div class="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <h1 class="text-2xl font-bold tracking-tight text-emerald-950">
+                <span v-if="filters.tag" class="mr-2 inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
+                    #{{ filters.tag }}
+                    <button @click="() => router.get('/feed', { ...filters, tag: null })" class="ml-2 hover:text-emerald-950">
+                        <X class="h-3 w-3" />
+                    </button>
+                </span>
                 <span v-if="currentCategory">{{ currentCategory.name }}</span>
                 <span v-else-if="$page.props.location">{{ $page.props.location }} Feed</span>
                 <span v-else>Local Feed</span>
@@ -99,11 +105,22 @@ return null;
         </div>
 
         <div class="space-y-6">
-            <div 
-                v-for="post in posts.data" 
-                :key="post.id" 
-                class="group overflow-hidden rounded-2xl border border-emerald-900/10 bg-white shadow-sm transition-all hover:border-amber-400 hover:shadow-md"
-            >
+            <template v-for="(post, index) in posts.data" :key="post.id">
+                <!-- Divider for non-local posts -->
+                <div v-if="!post.is_local && filters.location && (index === 0 || posts.data[index - 1].is_local)" class="my-8 rounded-2xl bg-amber-50 p-6 text-center border border-amber-200">
+                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-700 mb-3">
+                        <MapPin class="h-6 w-6" />
+                    </div>
+                    <h3 v-if="index === 0" class="text-lg font-bold text-amber-900">No posts found in your area</h3>
+                    <h3 v-else class="text-lg font-bold text-amber-900">Posts from other locations</h3>
+                    
+                    <p v-if="index === 0" class="mt-1 text-sm text-amber-700">We couldn't find any posts matching your exact location, but here are some from other areas.</p>
+                    <p v-else class="mt-1 text-sm text-amber-700">You've reached the end of the local posts. Here are some from other areas.</p>
+                </div>
+
+                <div 
+                    class="group overflow-hidden rounded-2xl border border-emerald-900/10 bg-white shadow-sm transition-all hover:border-amber-400 hover:shadow-md"
+                >
                 <div class="p-6 pb-2">
                     <div class="flex items-start justify-between">
                         <div>
@@ -116,6 +133,10 @@ return null;
                             </p>
                         </div>
                         <div class="flex flex-wrap items-center justify-end gap-2">
+                            <span class="inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-2.5 py-0.5 text-xs font-medium text-stone-700">
+                                <MapPin class="mr-1 h-3 w-3" />
+                                {{ post.city }}<template v-if="post.zip_code">, {{ post.zip_code }}</template>
+                            </span>
                             <span v-if="post.meta?.job_type" class="inline-flex items-center rounded-full border border-stone-200 px-2.5 py-0.5 text-xs font-medium text-stone-700">
                                 {{ post.meta.job_type }}
                             </span>
@@ -130,7 +151,18 @@ return null;
                     </div>
                 </div>
                 <div class="p-6 py-4">
-                    <p class="line-clamp-3 whitespace-pre-wrap text-stone-600">{{ post.description }}</p>
+                    <p class="line-clamp-3 whitespace-pre-wrap text-stone-600 mb-4">{{ post.description }}</p>
+                    
+                    <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2">
+                        <button 
+                            v-for="tag in post.tags" 
+                            :key="tag.id"
+                            @click="router.get('/feed', { ...filters, tag: tag.slug })"
+                            class="inline-flex items-center rounded-md bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-200 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                        >
+                            #{{ tag.name }}
+                        </button>
+                    </div>
                 </div>
                 <div class="p-6 pt-0">
                     <Link :href="`/posts/${post.id}`" class="inline-block w-full sm:w-auto">
@@ -140,6 +172,7 @@ return null;
                     </Link>
                 </div>
             </div>
+            </template>
 
             <div v-if="posts.data.length === 0" class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-emerald-900/20 bg-stone-50 py-20 text-center">
                 <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm">

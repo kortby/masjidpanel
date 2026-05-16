@@ -32,6 +32,7 @@ class PostSeeder extends Seeder
                 'title' => 'Experienced Halal Butcher Needed',
                 'description' => 'We are looking for an experienced butcher for our local Halal market. Full-time position with benefits. Must have at least 2 years of experience handling fresh meat and maintaining sanitary standards.',
                 'meta' => ['job_type' => 'Full-Time'],
+                'tags' => ['Urgent', 'Halal'],
             ],
             [
                 'location' => $locations[0],
@@ -39,6 +40,7 @@ class PostSeeder extends Seeder
                 'title' => 'Room Available in 3BR Apartment (Brothers)',
                 'description' => 'Looking for a clean and respectful brother to take the master bedroom in a 3BR/2BA apartment. Rent is $900/month plus split utilities. Very close to the local Islamic Center.',
                 'meta' => ['price' => 900],
+                'tags' => ['Urgent'],
             ],
             [
                 'location' => $locations[0],
@@ -46,6 +48,7 @@ class PostSeeder extends Seeder
                 'title' => 'Selling Like-New Toyota Camry 2020',
                 'description' => 'Alhamdulillah, I am selling my 2020 Toyota Camry LE. Clean title, regular maintenance at the dealership, 45,000 miles. Great reliable car.',
                 'meta' => ['price' => 18500],
+                'tags' => ['Used'],
             ],
             [
                 'location' => $locations[0],
@@ -62,6 +65,7 @@ class PostSeeder extends Seeder
                 'title' => 'Software Engineer for Islamic Tech Startup',
                 'description' => 'We are building an innovative app for the Muslim community and need a Senior Backend Engineer (Laravel/Vue). Remote options available but prefer local candidates in the Seattle area.',
                 'meta' => ['job_type' => 'Contract'],
+                'tags' => ['Remote'],
             ],
             [
                 'location' => $locations[1],
@@ -83,6 +87,7 @@ class PostSeeder extends Seeder
                 'title' => 'Giving away living room furniture set',
                 'description' => 'We are moving out of state and giving away our sofa, coffee table, and TV stand. Free to whoever can come pick it up first. Must have your own truck.',
                 'meta' => ['price' => 0],
+                'tags' => ['Free', 'Used', 'Urgent'],
             ],
 
             // Portland
@@ -99,6 +104,7 @@ class PostSeeder extends Seeder
                 'title' => 'Brand New Islamic Calligraphy Canvas',
                 'description' => "Bought this beautiful Ayatul Kursi canvas but it doesn't fit my wall space. Original packaging still on. Dimensions are 24x36 inches.",
                 'meta' => ['price' => 120],
+                'tags' => ['New'],
             ],
             [
                 'location' => $locations[2],
@@ -117,7 +123,7 @@ class PostSeeder extends Seeder
         ];
 
         foreach ($posts as $postData) {
-            Post::create([
+            $post = Post::create([
                 'user_id' => $users->random()->id,
                 'category_id' => $postData['category'],
                 'title' => $postData['title'],
@@ -127,6 +133,17 @@ class PostSeeder extends Seeder
                 'meta' => $postData['meta'],
                 'expires_at' => Carbon::now()->addDays(rand(10, 30)),
             ]);
+
+            if (isset($postData['tags'])) {
+                $tagIds = collect($postData['tags'])->map(function ($tagName) {
+                    return \App\Models\Tag::firstOrCreate([
+                        'slug' => \Illuminate\Support\Str::slug($tagName)
+                    ], [
+                        'name' => $tagName
+                    ])->id;
+                });
+                $post->tags()->sync($tagIds);
+            }
         }
     }
 }

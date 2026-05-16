@@ -1,0 +1,11 @@
+HTTP/1.1 409 Conflict
+Host: 127.0.0.1:8000
+Connection: close
+X-Powered-By: PHP/8.4.14
+X-Inertia-Location: http://127.0.0.1:8000/feed?location=92123&search=
+Cache-Control: no-cache, private
+Date: Sat, 16 May 2026 02:10:36 GMT
+Content-Type: text/html; charset=utf-8
+Set-Cookie: XSRF-TOKEN=eyJpdiI6ImUvQTdxNmMvME5xVStKcDI0c1R4NXc9PSIsInZhbHVlIjoiQ1lEVXF0NDc1K0dJdkxtZmRxRDdkZ3QySDZPbUcxSnNXUy9nQ0RSWVk1WXY1QlZnck4rbzNkajZ4aFdxSnFpRHdoakZVd3E2bnpPczdWUHFycFVCUEJFbEZuVm5USzNWUnJmRGdpVHZuamNFZC81WGgxTHJqOUFtaUNmQ3ZvYWwiLCJtYWMiOiIzZTY0NTk4OGJkNjVjZDFiOTlhMjhlYWE4ZjdlMmRlN2RlNjE0OGQ5MWVkNzQ0ZDY4MDZjYmZlZTlmODFiYWI1IiwidGFnIjoiIn0%3D; expires=Sat, 16 May 2026 04:10:36 GMT; Max-Age=7200; path=/; samesite=lax
+Set-Cookie: masjid-panel-session=eyJpdiI6IkdqRVZNeDRWd2s0VUFiaEpoQlo3dXc9PSIsInZhbHVlIjoiNElsTUFRblVtRWNxdlR5MDQrTzViR3llOFJsRTdlbXRucjZaWnlHd1hJeUdMWmtrYkk0aDdTOXFnL0NvM291MEo5emd4ZXlHZkU1TFZxclRBRFYwZ1hCWWl5OWRiM3Fxb0xSRWtrcUFjVTRCMnVkQjJwc1pyQ0ptL0lXc09xVmkiLCJtYWMiOiIwOGI0MWU4NDJhOTEzZGIwZDEwZTM5OWVhZjAwMzVhZDFjZjU0ODMzYTQwOGRiNjkyYzQ2NmQyYzA1ZGEwYjA0IiwidGFnIjoiIn0%3D; expires=Sat, 16 May 2026 04:10:36 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+

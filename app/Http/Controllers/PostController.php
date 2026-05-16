@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\CategorySuggestion;
 use App\Models\Post;
+use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PostController extends Controller
@@ -25,6 +27,7 @@ class PostController extends Controller
         $categories = Category::orderedByLocationDemand($city)->get();
 
         $postsQuery = Post::with(['user', 'category', 'media'])
+            ->select('posts.*')
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
@@ -32,15 +35,26 @@ class PostController extends Controller
 
         if ($city) {
             if (is_numeric($city)) {
-                $postsQuery->orderByRaw('CASE WHEN zip_code IS NULL OR zip_code = "" THEN 1 ELSE 0 END ASC')
+                $postsQuery->selectRaw('(zip_code = ?) as is_local', [$city])
+                    ->orderByRaw('CASE WHEN zip_code = ? THEN 0 ELSE 1 END', [$city])
                     ->orderByRaw('ABS(CAST(zip_code AS INTEGER) - ?) ASC', [(int) $city]);
             } else {
-                $postsQuery->where('city', $city);
+                $postsQuery->selectRaw('(LOWER(city) = LOWER(?)) as is_local', [$city])
+                    ->orderByRaw('CASE WHEN LOWER(city) = LOWER(?) THEN 0 ELSE 1 END', [$city]);
             }
+        } else {
+            $postsQuery->selectRaw('1 as is_local');
         }
 
         if ($request->has('category_id')) {
             $postsQuery->where('category_id', $request->category_id);
+        }
+
+        if ($request->has('tag')) {
+            $tagSlug = $request->query('tag');
+            $postsQuery->whereHas('tags', function ($q) use ($tagSlug) {
+                $q->where('slug', $tagSlug);
+            });
         }
 
         if ($request->has('search') && $request->search != '') {
@@ -56,7 +70,7 @@ class PostController extends Controller
         return Inertia::render('Board/Feed', [
             'categories' => $categories,
             'posts' => $posts,
-            'filters' => array_merge($request->only(['category_id', 'search']), ['location' => $city]),
+            'filters' => array_merge($request->only(['category_id', 'search', 'tag']), ['location' => $city]),
         ]);
     }
 
@@ -79,6 +93,8 @@ class PostController extends Controller
             'zip_code' => 'nullable|string|max:20',
             'suggested_category_name' => 'nullable|string|max:255',
             'meta' => 'nullable|array',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50',
             'images' => 'nullable|array|max:3',
             'images.*' => 'image|max:5120',
         ]);
@@ -100,6 +116,17 @@ class PostController extends Controller
             }
         }
 
+        if (! empty($validated['tags'])) {
+            $tagIds = collect($validated['tags'])->map(function ($tagName) {
+                return Tag::firstOrCreate([
+                    'slug' => Str::slug($tagName),
+                ], [
+                    'name' => $tagName,
+                ])->id;
+            });
+            $post->tags()->sync($tagIds);
+        }
+
         if (! empty($validated['suggested_category_name'])) {
             CategorySuggestion::create([
                 'user_id' => $request->user()->id,
@@ -117,7 +144,7 @@ class PostController extends Controller
 
         $categories = Category::orderBy('name')->get();
 
-        $post->load('media');
+        $post->load(['media', 'tags']);
 
         $mediaUrls = $post->getMedia('images')->map(function ($media) {
             return [
@@ -136,6 +163,7 @@ class PostController extends Controller
                 'city' => $post->city,
                 'zip_code' => $post->zip_code,
                 'meta' => $post->meta,
+                'tags' => $post->tags->pluck('name')->toArray(),
                 'images' => $mediaUrls,
             ],
         ]);
@@ -152,6 +180,8 @@ class PostController extends Controller
             'city' => 'required|string|max:255',
             'zip_code' => 'nullable|string|max:20',
             'meta' => 'nullable|array',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50',
             'images' => 'nullable|array|max:3',
             'images.*' => 'image|max:5120',
             'deleted_images' => 'nullable|array',
@@ -167,7 +197,7 @@ class PostController extends Controller
             'meta' => $validated['meta'] ?? null,
         ]);
 
-        if (!empty($validated['deleted_images'])) {
+        if (! empty($validated['deleted_images'])) {
             $post->media()->whereIn('id', $validated['deleted_images'])->delete();
         }
 
@@ -179,6 +209,19 @@ class PostController extends Controller
                     $currentCount++;
                 }
             }
+        }
+
+        if (isset($validated['tags'])) {
+            $tagIds = collect($validated['tags'])->map(function ($tagName) {
+                return Tag::firstOrCreate([
+                    'slug' => Str::slug($tagName),
+                ], [
+                    'name' => $tagName,
+                ])->id;
+            });
+            $post->tags()->sync($tagIds);
+        } else {
+            $post->tags()->detach();
         }
 
         return redirect()->route('posts.show', $post)->with('success', 'Post updated successfully!');
@@ -195,7 +238,7 @@ class PostController extends Controller
 
     public function show(Request $request, Post $post)
     {
-        $post->load(['user', 'category', 'media']);
+        $post->load(['user', 'category', 'media', 'tags']);
 
         $user = $request->user();
         $isVerified = $user && $user->is_verified;
@@ -226,6 +269,7 @@ class PostController extends Controller
             'city' => $post->city,
             'zip_code' => $post->zip_code,
             'meta' => $post->meta,
+            'tags' => $post->tags->map(fn ($t) => ['id' => $t->id, 'name' => $t->name, 'slug' => $t->slug]),
             'created_at' => $post->created_at,
             'category' => $post->category->only('id', 'name'),
             'author_id' => $author->id,
