@@ -16,7 +16,7 @@ const mainNavItems = [
 </script>
 
 <template>
-    <header class="bg-emerald-900 text-emerald-50 shadow-md">
+    <header class="relative z-50 bg-emerald-900 text-emerald-50 shadow-md">
         <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <!-- Logo -->
             <Link href="/" class="flex items-center gap-x-2 text-xl font-bold tracking-tight text-white transition-colors hover:text-emerald-200">
