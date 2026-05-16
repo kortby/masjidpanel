@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\CategorySuggestion;
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class AdminController extends Controller
@@ -72,5 +74,44 @@ class AdminController extends Controller
         $user->delete();
 
         return redirect()->back()->with('success', 'User and all associated posts have been deleted.');
+    }
+
+    public function storeCategory(Request $request)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
+        ]);
+
+        Category::create([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+        ]);
+
+        return redirect()->back()->with('success', 'Category created successfully.');
+    }
+
+    public function updateCategory(Request $request, Category $category)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name,'.$category->id],
+        ]);
+
+        $category->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+        ]);
+
+        return redirect()->back()->with('success', 'Category updated successfully.');
+    }
+
+    public function destroyCategory(Category $category)
+    {
+        if ($category->posts()->exists()) {
+            return redirect()->back()->with('error', 'Cannot delete a category that has posts. Reassign posts first.');
+        }
+
+        $category->delete();
+
+        return redirect()->back()->with('success', 'Category deleted successfully.');
     }
 }

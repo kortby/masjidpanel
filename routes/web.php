@@ -50,6 +50,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('/users/{user}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
         Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+
+        Route::post('/categories', [AdminController::class, 'storeCategory'])->name('categories.store');
+        Route::put('/categories/{category}', [AdminController::class, 'updateCategory'])->name('categories.update');
+        Route::delete('/categories/{category}', [AdminController::class, 'destroyCategory'])->name('categories.destroy');
     });
 });
 

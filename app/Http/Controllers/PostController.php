@@ -7,6 +7,7 @@ use App\Models\CategorySuggestion;
 use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -37,8 +38,8 @@ class PostController extends Controller
             if (is_numeric($city)) {
                 $postsQuery->selectRaw('(posts.zip_code = ?) as is_local', [$city])
                     ->orderByRaw('CASE WHEN posts.zip_code = ? THEN 0 ELSE 1 END', [$city]);
-                
-                $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+
+                $driver = DB::connection()->getDriverName();
                 if ($driver === 'pgsql') {
                     $postsQuery->orderByRaw('ABS(CAST(NULLIF(regexp_replace(posts.zip_code, \'[^0-9]\', \'\', \'g\'), \'\') AS INTEGER) - ?) ASC', [(int) $city]);
                 } elseif ($driver === 'mysql') {
@@ -75,9 +76,16 @@ class PostController extends Controller
 
         $posts = $postsQuery->latest()->paginate(15)->withQueryString();
 
+        $popularTags = Tag::withCount('posts')
+            ->whereHas('posts')
+            ->orderByDesc('posts_count')
+            ->take(12)
+            ->get(['id', 'name', 'slug']);
+
         return Inertia::render('Board/Feed', [
             'categories' => $categories,
             'posts' => $posts,
+            'popularTags' => $popularTags,
             'filters' => array_merge($request->only(['category_id', 'search', 'tag']), ['location' => $city]),
         ]);
     }

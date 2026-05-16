@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { 
-    Search, MapPin, Image as ImageIcon, ChevronLeft, X, SlidersHorizontal
+    Search, MapPin, Image as ImageIcon, ChevronLeft, X, SlidersHorizontal, Tag
 } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
 import {
@@ -15,6 +15,7 @@ import {
 const props = defineProps<{
     categories: any[];
     posts: { data: any[], [key: string]: any };
+    popularTags: { id: number; name: string; slug: string; posts_count: number }[];
     filters: any;
 }>();
 
@@ -150,36 +151,63 @@ return null;
             </form>
         </div>
 
-        <!-- Category Filter Dropdown -->
-        <div class="mb-8 flex items-center gap-3">
-            <div class="flex items-center gap-2 text-sm font-medium text-stone-500">
-                <SlidersHorizontal class="h-4 w-4" />
-                <span class="hidden sm:inline">Filter:</span>
+        <!-- Filters Row -->
+        <div class="mb-8 space-y-4">
+            <!-- Category Dropdown -->
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 text-sm font-medium text-stone-500">
+                    <SlidersHorizontal class="h-4 w-4" />
+                    <span class="hidden sm:inline">Filter:</span>
+                </div>
+                <Select
+                    :model-value="filters.category_id ? String(filters.category_id) : 'all'"
+                    @update:model-value="(val: string) => {
+                        const params: any = { search: filters.search, location: filters.location, tag: filters.tag };
+                        if (val !== 'all') params.category_id = val;
+                        router.get('/feed', params, { preserveState: true, preserveScroll: true, replace: true });
+                    }"
+                >
+                    <SelectTrigger class="h-10 w-full rounded-full border-emerald-900/10 bg-white text-sm shadow-sm sm:w-64">
+                        <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent class="rounded-xl">
+                        <SelectItem value="all">
+                            All Categories
+                        </SelectItem>
+                        <SelectItem
+                            v-for="category in categories"
+                            :key="category.id"
+                            :value="String(category.id)"
+                        >
+                            {{ category.name }} ({{ category.posts_count }})
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
-            <Select
-                :model-value="filters.category_id ? String(filters.category_id) : 'all'"
-                @update:model-value="(val: string) => {
-                    const params: any = { search: filters.search, location: filters.location, tag: filters.tag };
-                    if (val !== 'all') params.category_id = val;
-                    router.get('/feed', params, { preserveState: true, preserveScroll: true, replace: true });
-                }"
-            >
-                <SelectTrigger class="h-10 w-full rounded-full border-emerald-900/10 bg-white text-sm shadow-sm sm:w-64">
-                    <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent class="rounded-xl">
-                    <SelectItem value="all">
-                        All Categories
-                    </SelectItem>
-                    <SelectItem
-                        v-for="category in categories"
-                        :key="category.id"
-                        :value="String(category.id)"
-                    >
-                        {{ category.name }} ({{ category.posts_count }})
-                    </SelectItem>
-                </SelectContent>
-            </Select>
+
+            <!-- Trending Tags -->
+            <div v-if="popularTags && popularTags.length > 0" class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-1.5 text-xs font-medium text-stone-400">
+                    <Tag class="h-3.5 w-3.5" />
+                    <span>Trending:</span>
+                </div>
+                <button
+                    v-for="pTag in popularTags"
+                    :key="pTag.id"
+                    @click="router.get('/feed', { ...filters, tag: pTag.slug }, { preserveState: true, preserveScroll: true, replace: true })"
+                    :class="[
+                        'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-all duration-200',
+                        filters.tag === pTag.slug
+                            ? 'bg-emerald-800 text-white shadow-sm'
+                            : 'border border-emerald-900/8 bg-white text-stone-500 hover:border-emerald-400/40 hover:bg-emerald-50 hover:text-emerald-700'
+                    ]"
+                >
+                    #{{ pTag.name }}
+                    <span v-if="filters.tag === pTag.slug" class="ml-0.5">
+                        <X class="h-3 w-3" />
+                    </span>
+                </button>
+            </div>
         </div>
 
         <div class="space-y-6">
@@ -231,14 +259,20 @@ return null;
                 <div class="p-6 py-4">
                     <p class="line-clamp-3 whitespace-pre-wrap text-stone-600 mb-4">{{ post.description }}</p>
                     
-                    <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2">
+                <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2">
                         <button 
                             v-for="tag in post.tags" 
                             :key="tag.id"
-                            @click="router.get('/feed', { ...filters, tag: tag.slug })"
-                            class="inline-flex items-center rounded-md bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-200 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                            @click.stop="router.get('/feed', { ...filters, tag: tag.slug })"
+                            :class="[
+                                'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200',
+                                filters.tag === tag.slug
+                                    ? 'bg-emerald-700 text-white shadow-sm'
+                                    : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10 hover:bg-emerald-100 hover:text-emerald-900'
+                            ]"
                         >
-                            #{{ tag.name }}
+                            <Tag class="h-3 w-3" />
+                            {{ tag.name }}
                         </button>
                     </div>
                 </div>
