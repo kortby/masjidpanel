@@ -29,25 +29,30 @@ class PostController extends Controller
         $postsQuery = Post::with(['user', 'category', 'media'])
             ->select('posts.*')
             ->where(function ($q) {
-                $q->whereNull('expires_at')
-                    ->orWhere('expires_at', '>', now());
+                $q->whereNull('posts.expires_at')
+                    ->orWhere('posts.expires_at', '>', now());
             });
 
         if ($city) {
             if (is_numeric($city)) {
-                $postsQuery->selectRaw('(zip_code = ?) as is_local', [$city])
-                    ->orderByRaw('CASE WHEN zip_code = ? THEN 0 ELSE 1 END', [$city])
-                    ->orderByRaw('ABS(CAST(zip_code AS INTEGER) - ?) ASC', [(int) $city]);
+                $postsQuery->selectRaw('(posts.zip_code = ?) as is_local', [$city])
+                    ->orderByRaw('CASE WHEN posts.zip_code = ? THEN 0 ELSE 1 END', [$city]);
+                
+                if (config('database.default') === 'pgsql') {
+                    $postsQuery->orderByRaw('ABS(CAST(NULLIF(regexp_replace(posts.zip_code, \'[^0-9]\', \'\', \'g\'), \'\') AS INTEGER) - ?) ASC', [(int) $city]);
+                } else {
+                    $postsQuery->orderByRaw('ABS(CAST(NULLIF(posts.zip_code, \'\') AS INTEGER) - ?) ASC', [(int) $city]);
+                }
             } else {
-                $postsQuery->selectRaw('(LOWER(city) = LOWER(?)) as is_local', [$city])
-                    ->orderByRaw('CASE WHEN LOWER(city) = LOWER(?) THEN 0 ELSE 1 END', [$city]);
+                $postsQuery->selectRaw('(LOWER(posts.city) = LOWER(?)) as is_local', [$city])
+                    ->orderByRaw('CASE WHEN LOWER(posts.city) = LOWER(?) THEN 0 ELSE 1 END', [$city]);
             }
         } else {
             $postsQuery->selectRaw('1 as is_local');
         }
 
-        if ($request->has('category_id')) {
-            $postsQuery->where('category_id', $request->category_id);
+        if ($request->has('category_id') && $request->category_id != '') {
+            $postsQuery->where('posts.category_id', $request->category_id);
         }
 
         if ($request->has('tag')) {
@@ -60,8 +65,8 @@ class PostController extends Controller
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $postsQuery->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $q->where('posts.title', 'like', "%{$search}%")
+                    ->orWhere('posts.description', 'like', "%{$search}%");
             });
         }
 
@@ -296,12 +301,12 @@ class PostController extends Controller
 
         $posts = Post::with('category')
             ->where(function ($q) {
-                $q->whereNull('expires_at')
-                    ->orWhere('expires_at', '>', now());
+                $q->whereNull('posts.expires_at')
+                    ->orWhere('posts.expires_at', '>', now());
             })
             ->where(function ($q) use ($query) {
-                $q->where('title', 'like', "%{$query}%")
-                    ->orWhere('description', 'like', "%{$query}%");
+                $q->where('posts.title', 'like', "%{$query}%")
+                    ->orWhere('posts.description', 'like', "%{$query}%");
             })
             ->latest()
             ->take(8)
