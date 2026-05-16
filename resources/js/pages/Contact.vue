@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
-import { Mail, MapPin, Phone } from 'lucide-vue-next';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Mail, MapPin, Phone, CheckCircle, AlertCircle } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 defineOptions({
     layout: {
@@ -23,6 +24,9 @@ const submit = () => {
         onSuccess: () => form.reset(),
     });
 };
+
+const page = usePage();
+const flash = computed(() => page.props.flash as Record<string, string> | undefined);
 </script>
 
 <template>
@@ -83,6 +87,16 @@ const submit = () => {
                         <p class="text-sm text-stone-500">We typically reply within 24 hours.</p>
                     </div>
                     
+                    <!-- Flash Messages -->
+                    <div v-if="flash?.success" class="mb-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                        <CheckCircle class="h-5 w-5 shrink-0 text-emerald-600" />
+                        <p class="text-sm font-medium text-emerald-800">{{ flash.success }}</p>
+                    </div>
+                    <div v-if="flash?.error" class="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+                        <AlertCircle class="h-5 w-5 shrink-0 text-red-600" />
+                        <p class="text-sm font-medium text-red-800">{{ flash.error }}</p>
+                    </div>
+
                     <form @submit.prevent="submit" class="space-y-6">
                         <div class="grid gap-6 sm:grid-cols-2">
                             <div class="space-y-2">
@@ -92,8 +106,10 @@ const submit = () => {
                                     v-model="form.name" 
                                     placeholder="John Doe" 
                                     :disabled="form.processing"
-                                    required 
-                                    class="flex h-10 w-full rounded-md border border-stone-200 bg-transparent px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    :class="[
+                                        'flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                                        form.errors.name ? 'border-red-500 focus:ring-red-500' : 'border-stone-200 focus:ring-emerald-500'
+                                    ]"
                                 />
                                 <p v-if="form.errors.name" class="text-sm font-medium text-red-500">{{ form.errors.name }}</p>
                             </div>
@@ -101,12 +117,13 @@ const submit = () => {
                                 <label for="email" class="block text-sm font-medium leading-none text-emerald-950">Email Address</label>
                                 <input 
                                     id="email" 
-                                    type="email" 
                                     v-model="form.email" 
                                     placeholder="john@example.com" 
                                     :disabled="form.processing"
-                                    required 
-                                    class="flex h-10 w-full rounded-md border border-stone-200 bg-transparent px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    :class="[
+                                        'flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                                        form.errors.email ? 'border-red-500 focus:ring-red-500' : 'border-stone-200 focus:ring-emerald-500'
+                                    ]"
                                 />
                                 <p v-if="form.errors.email" class="text-sm font-medium text-red-500">{{ form.errors.email }}</p>
                             </div>
@@ -119,8 +136,10 @@ const submit = () => {
                                 v-model="form.subject" 
                                 placeholder="How can we help you?" 
                                 :disabled="form.processing"
-                                required 
-                                class="flex h-10 w-full rounded-md border border-stone-200 bg-transparent px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                :class="[
+                                    'flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                                    form.errors.subject ? 'border-red-500 focus:ring-red-500' : 'border-stone-200 focus:ring-emerald-500'
+                                ]"
                             />
                             <p v-if="form.errors.subject" class="text-sm font-medium text-red-500">{{ form.errors.subject }}</p>
                         </div>
@@ -131,9 +150,11 @@ const submit = () => {
                                 id="message" 
                                 v-model="form.message" 
                                 placeholder="Write your message here..." 
-                                class="flex min-h-[150px] w-full rounded-md border border-stone-200 bg-transparent px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                :class="[
+                                    'flex min-h-[150px] w-full rounded-md border bg-transparent px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                                    form.errors.message ? 'border-red-500 focus:ring-red-500' : 'border-stone-200 focus:ring-emerald-500'
+                                ]"
                                 :disabled="form.processing"
-                                required 
                             ></textarea>
                             <p v-if="form.errors.message" class="text-sm font-medium text-red-500">{{ form.errors.message }}</p>
                         </div>

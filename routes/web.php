@@ -54,6 +54,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/categories', [AdminController::class, 'storeCategory'])->name('categories.store');
         Route::put('/categories/{category}', [AdminController::class, 'updateCategory'])->name('categories.update');
         Route::delete('/categories/{category}', [AdminController::class, 'destroyCategory'])->name('categories.destroy');
+
+        Route::post('/messages/{message}/toggle-read', [AdminController::class, 'toggleReadMessage'])->name('messages.toggleRead');
+        Route::delete('/messages/{message}', [AdminController::class, 'destroyMessage'])->name('messages.destroy');
     });
 });
 

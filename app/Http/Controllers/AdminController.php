@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\CategorySuggestion;
+use App\Models\ContactMessage;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -50,11 +51,14 @@ class AdminController extends Controller
 
         $categories = Category::withCount('posts')->orderBy('name')->get();
 
+        $messages = ContactMessage::latest()->get();
+
         return Inertia::render('Admin/Dashboard', [
             'metrics' => $metrics,
             'suggestions' => $suggestions,
             'users' => $users,
             'categories' => $categories,
+            'messages' => $messages,
         ]);
     }
 
@@ -113,5 +117,19 @@ class AdminController extends Controller
         $category->delete();
 
         return redirect()->back()->with('success', 'Category deleted successfully.');
+    }
+
+    public function toggleReadMessage(ContactMessage $message)
+    {
+        $message->update(['is_read' => ! $message->is_read]);
+
+        return redirect()->back();
+    }
+
+    public function destroyMessage(ContactMessage $message)
+    {
+        $message->delete();
+
+        return redirect()->back()->with('success', 'Message deleted.');
     }
 }

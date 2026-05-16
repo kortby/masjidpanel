@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { Activity, Users, CheckCircle, Clock, LayoutDashboard, Tags, Menu, X as XIcon, Plus, Pencil, Trash2 } from 'lucide-vue-next';
+import { Activity, Users, CheckCircle, Clock, LayoutDashboard, Tags, Menu, X as XIcon, Plus, Pencil, Trash2, MessageSquare, Eye, EyeOff } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     metrics: {
         total_users: number;
         verified_users: number;
@@ -18,7 +18,10 @@ defineProps<{
     suggestions: any[];
     users: any;
     categories: any[];
+    messages: any[];
 }>();
+
+const unreadCount = computed(() => props.messages.filter(m => !m.is_read).length);
 
 defineOptions({
     layout: {
@@ -35,6 +38,7 @@ const menuItems = [
     { key: 'overview', label: 'Overview', icon: LayoutDashboard },
     { key: 'users', label: 'Users', icon: Users },
     { key: 'categories', label: 'Categories', icon: Tags },
+    { key: 'messages', label: 'Messages', icon: MessageSquare },
 ];
 
 const setSection = (key: string) => {
@@ -107,6 +111,17 @@ const deleteCategory = (id: number) => {
         router.delete(`/admin/categories/${id}`, { preserveScroll: true });
     }
 };
+
+// Messages
+const toggleRead = (id: number) => {
+    router.post(`/admin/messages/${id}/toggle-read`, {}, { preserveScroll: true });
+};
+
+const deleteMessage = (id: number) => {
+    if (confirm('Are you sure you want to delete this message?')) {
+        router.delete(`/admin/messages/${id}`, { preserveScroll: true });
+    }
+};
 </script>
 
 <template>
@@ -142,6 +157,7 @@ const deleteCategory = (id: number) => {
                 >
                     <component :is="item.icon" class="h-4 w-4" />
                     {{ item.label }}
+                    <Badge v-if="item.key === 'messages' && unreadCount > 0" variant="destructive" class="ml-auto h-5 min-w-[20px] px-1.5 text-[10px]">{{ unreadCount }}</Badge>
                 </button>
             </nav>
         </aside>
@@ -384,6 +400,58 @@ const deleteCategory = (id: number) => {
                         </div>
                     </CardContent>
                 </Card>
+            </template>
+
+            <!-- Messages Section -->
+            <template v-if="activeSection === 'messages'">
+                <div>
+                    <h1 class="hidden text-2xl font-bold tracking-tight md:block">Contact Messages</h1>
+                    <p class="text-sm text-muted-foreground">Messages submitted through the contact form.</p>
+                </div>
+
+                <Card v-if="messages.length === 0">
+                    <CardContent class="py-12 text-center">
+                        <MessageSquare class="mx-auto h-10 w-10 text-stone-300" />
+                        <p class="mt-3 text-sm text-muted-foreground">No messages yet.</p>
+                    </CardContent>
+                </Card>
+
+                <div v-else class="space-y-3">
+                    <Card 
+                        v-for="msg in messages" 
+                        :key="msg.id" 
+                        :class="[
+                            'transition-all',
+                            msg.is_read ? 'opacity-70' : 'border-emerald-500/30 shadow-sm'
+                        ]"
+                    >
+                        <CardContent class="p-5">
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div class="min-w-0 flex-1">
+                                    <div class="mb-1 flex flex-wrap items-center gap-2">
+                                        <h3 class="text-sm font-bold text-foreground">{{ msg.subject }}</h3>
+                                        <Badge v-if="!msg.is_read" variant="default" class="text-[10px]">New</Badge>
+                                    </div>
+                                    <p class="mb-3 text-xs text-muted-foreground">
+                                        From <span class="font-medium text-foreground">{{ msg.name }}</span>
+                                        &lt;{{ msg.email }}&gt;
+                                        · {{ new Date(msg.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+                                    </p>
+                                    <p class="whitespace-pre-wrap text-sm text-muted-foreground">{{ msg.message }}</p>
+                                </div>
+                                <div class="flex shrink-0 items-center gap-1">
+                                    <Button size="sm" variant="ghost" class="h-8 w-8 p-0" @click="toggleRead(msg.id)" :title="msg.is_read ? 'Mark as unread' : 'Mark as read'">
+                                        <EyeOff v-if="msg.is_read" class="h-3.5 w-3.5" />
+                                        <Eye v-else class="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" class="h-8 w-8 p-0 text-destructive hover:text-destructive" @click="deleteMessage(msg.id)" title="Delete">
+                                        <Trash2 class="h-3.5 w-3.5" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </template>
         </main>
     </div>
