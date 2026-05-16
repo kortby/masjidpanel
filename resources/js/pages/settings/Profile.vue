@@ -157,6 +157,8 @@ const user = computed(() => page.props.auth.user);
                         name="zip_code"
                         :default-value="user.zip_code"
                         placeholder="98101"
+                        pattern="^\d{5}(-\d{4})?$"
+                        title="Please enter a valid 5-digit US zip code (e.g. 92123)"
                     />
                     <InputError class="mt-2" :message="errors.zip_code" />
                 </div>

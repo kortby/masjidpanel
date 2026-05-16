@@ -66,6 +66,8 @@ const getCategoryIcon = (name: string) => {
                         v-model="locationQuery" 
                         type="text" 
                         placeholder="City or Zip" 
+                        pattern="^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$"
+                        title="Please enter a valid 5-digit zip code or a city name"
                         class="h-14 w-full rounded-full border border-emerald-900/10 bg-white pl-12 text-base text-stone-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                 </div>

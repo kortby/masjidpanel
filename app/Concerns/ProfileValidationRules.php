@@ -21,7 +21,7 @@ trait ProfileValidationRules
             'age' => ['nullable', 'integer', 'min:13', 'max:120'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:255'],
-            'zip_code' => ['nullable', 'string', 'max:20'],
+            'zip_code' => ['nullable', 'string', 'regex:/^\d{5}(-\d{4})?$/', 'max:20'],
             'phone_number' => ['nullable', 'string', 'max:20'],
             'show_age' => ['boolean'],
             'show_location' => ['boolean'],

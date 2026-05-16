@@ -19,4 +19,16 @@ class ProfileUpdateRequest extends FormRequest
     {
         return $this->profileRules($this->user()->id);
     }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'zip_code.regex' => 'Please enter a valid 5-digit US zip code (e.g. 92123).',
+        ];
+    }
 }

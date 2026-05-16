@@ -98,13 +98,15 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'city' => 'required|string|max:255',
-            'zip_code' => 'nullable|string|max:20',
+            'zip_code' => ['nullable', 'string', 'regex:/^\d{5}(-\d{4})?$/', 'max:20'],
             'suggested_category_name' => 'nullable|string|max:255',
             'meta' => 'nullable|array',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
             'images' => 'nullable|array|max:3',
             'images.*' => 'image|max:5120',
+        ], [
+            'zip_code.regex' => 'Please enter a valid 5-digit US zip code (e.g. 92123).',
         ]);
 
         $post = Post::create([
@@ -186,7 +188,7 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'city' => 'required|string|max:255',
-            'zip_code' => 'nullable|string|max:20',
+            'zip_code' => ['nullable', 'string', 'regex:/^\d{5}(-\d{4})?$/', 'max:20'],
             'meta' => 'nullable|array',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
@@ -194,6 +196,8 @@ class PostController extends Controller
             'images.*' => 'image|max:5120',
             'deleted_images' => 'nullable|array',
             'deleted_images.*' => 'integer',
+        ], [
+            'zip_code.regex' => 'Please enter a valid 5-digit US zip code (e.g. 92123).',
         ]);
 
         $post->update([

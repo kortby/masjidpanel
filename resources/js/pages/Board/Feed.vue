@@ -26,8 +26,13 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const triggerSearch = () => {
     if (searchTimeout) {
-clearTimeout(searchTimeout);
-}
+        clearTimeout(searchTimeout);
+    }
+
+    const loc = locationQuery.value.trim();
+    if (/^\d+$/.test(loc) && !/^\d{5}(-\d{4})?$/.test(loc)) {
+        return; // Don't auto-search if user is halfway through typing a zipcode
+    }
     
     searchTimeout = setTimeout(() => {
         router.get('/feed', { 
@@ -77,13 +82,15 @@ return null;
                 <span v-else>Local Feed</span>
             </h1>
             
-            <div class="flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
+            <form @submit.prevent="triggerSearch" class="flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
                 <div class="relative w-full sm:w-48">
                     <MapPin class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600/60" />
                     <input 
                         v-model="locationQuery" 
                         type="text" 
                         placeholder="City or Zip" 
+                        pattern="^(?:\d{5}(?:-\d{4})?|.*[a-zA-Z].*)$"
+                        title="Please enter a valid 5-digit zip code or a city name"
                         class="h-10 w-full rounded-full border border-emerald-900/10 bg-white pl-9 text-sm text-stone-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                 </div>
@@ -101,7 +108,8 @@ return null;
                         Create Post
                     </button>
                 </Link>
-            </div>
+                <button type="submit" class="hidden"></button>
+            </form>
         </div>
 
         <div class="space-y-6">

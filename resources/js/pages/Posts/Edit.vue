@@ -61,7 +61,7 @@ const submit = () => {
 
     <div class="mx-auto flex min-h-[calc(100vh-4rem)] w-full items-center justify-center p-4 sm:p-6 lg:p-8">
         <div class="w-full max-w-2xl">
-            <div class="overflow-hidden rounded-3xl border border-emerald-900/10 bg-white shadow-sm">
+            <form @submit.prevent="submit" class="overflow-hidden rounded-3xl border border-emerald-900/10 bg-white shadow-sm">
                 <div class="border-b border-emerald-900/10 px-6 py-8 sm:px-8">
                     <h2 class="text-2xl font-bold tracking-tight text-emerald-950">Edit Post</h2>
                     <p class="mt-2 text-sm text-stone-500">Update your post details and location.</p>
@@ -128,7 +128,8 @@ const submit = () => {
 
                         <div class="space-y-2">
                             <label for="zip_code" class="block text-sm font-bold text-emerald-950">Zip Code (Optional)</label>
-                            <input id="zip_code" v-model="form.zip_code" class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                            <input id="zip_code" v-model="form.zip_code" pattern="^\d{5}(-\d{4})?$" title="Please enter a valid 5-digit US zip code (e.g. 92123)" class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                            <p v-if="form.errors.zip_code" class="text-sm font-medium text-red-500">{{ form.errors.zip_code }}</p>
                         </div>
 
                         <!-- Images Management -->
@@ -173,10 +174,10 @@ const submit = () => {
                 </div>
 
                 <div class="flex items-center justify-between border-t border-emerald-900/10 bg-stone-50 px-6 py-4 sm:px-8">
-                    <button @click="() => router.visit(`/posts/${post.id}`)" class="rounded-full px-6 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200 hover:text-stone-900">Cancel</button>
-                    <button @click="submit" :disabled="form.processing" class="rounded-full bg-emerald-800 px-8 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">Save Changes</button>
+                    <button type="button" @click="() => router.visit(`/posts/${post.id}`)" class="rounded-full px-6 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200 hover:text-stone-900">Cancel</button>
+                    <button type="submit" :disabled="form.processing" class="rounded-full bg-emerald-800 px-8 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">Save Changes</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 </template>
