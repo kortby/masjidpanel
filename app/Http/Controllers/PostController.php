@@ -153,6 +153,8 @@ class PostController extends Controller
             ]);
         }
 
+        \Illuminate\Support\Facades\Mail::to($request->user()->email)->send(new \App\Mail\PostCreated($post));
+
         return redirect()->route('posts.show', $post)->with('success', 'Post created successfully!');
     }
 
@@ -299,6 +301,23 @@ class PostController extends Controller
             'is_author' => $user && $user->id === $author->id,
             'has_public_contact' => $author->show_phone || $author->show_email,
         ];
+
+        if ($user && ($user->id === $author->id || $user->hasRole('Super Admin'))) {
+            $post->load('messages.sender');
+            $postData['messages'] = $post->messages->map(function ($msg) {
+                return [
+                    'id' => $msg->id,
+                    'message' => $msg->message,
+                    'is_read' => $msg->is_read,
+                    'created_at' => $msg->created_at,
+                    'sender' => [
+                        'id' => $msg->sender->id,
+                        'name' => $msg->sender->name,
+                        'email' => $msg->sender->email,
+                    ],
+                ];
+            });
+        }
 
         return Inertia::render('Posts/Show', [
             'post' => $postData,

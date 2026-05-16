@@ -28,6 +28,11 @@ class MessageController extends Controller
 
         RateLimiter::hit($key, 3600); // 1 hour
 
+        $post->messages()->create([
+            'sender_id' => $user->id,
+            'message' => $validated['message'],
+        ]);
+
         Mail::to($post->user->email)->send(new PostMessageRelay($post, $user, $validated['message']));
 
         return back()->with('success', 'Your message has been securely sent to the author!');

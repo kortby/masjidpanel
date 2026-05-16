@@ -173,5 +173,31 @@ const deletePost = () => {
                 </div>
             </div>
         </div>
+
+        <!-- Messages Section (Only visible to Author or Admin) -->
+        <div v-if="post.messages" class="mt-8">
+            <h2 class="mb-4 text-2xl font-extrabold tracking-tight text-emerald-950">Messages Received</h2>
+            
+            <div v-if="post.messages.length === 0" class="rounded-3xl border border-emerald-900/10 bg-white p-8 text-center shadow-sm">
+                <p class="text-stone-500">No messages have been sent regarding this post yet.</p>
+            </div>
+            
+            <div v-else class="space-y-4">
+                <div v-for="message in post.messages" :key="message.id" class="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
+                    <div class="mb-3 flex items-start justify-between">
+                        <div>
+                            <p class="font-bold text-emerald-950">{{ message.sender.name }}</p>
+                            <p class="text-sm text-emerald-700">
+                                <a :href="`mailto:${message.sender.email}`" class="hover:underline">{{ message.sender.email }}</a>
+                            </p>
+                        </div>
+                        <span class="text-xs text-stone-400">{{ new Date(message.created_at).toLocaleString() }}</span>
+                    </div>
+                    <div class="rounded-xl bg-stone-50 p-4 text-stone-700">
+                        <p class="whitespace-pre-wrap">{{ message.message }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
