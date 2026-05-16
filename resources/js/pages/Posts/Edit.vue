@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { Info } from 'lucide-vue-next';
 import TagsInput from '@/components/TagsInput.vue';
+import { useCategoryFields } from '@/composables/useCategoryFields';
 
 const props = defineProps<{
     categories: any[];
@@ -55,6 +57,16 @@ const selectedCategory = computed(() => {
     return props.categories.find(c => c.id === form.category_id);
 });
 
+const categoryConfig = computed(() => {
+    return useCategoryFields(selectedCategory.value?.name || '');
+});
+
+const addSuggestedTag = (tag: string) => {
+    if (!form.tags.includes(tag)) {
+        form.tags = [...form.tags, tag];
+    }
+};
+
 const toggleDeleteImage = (id: number) => {
     if (form.deleted_images.includes(id)) {
         form.deleted_images = form.deleted_images.filter(i => i !== id);
@@ -77,6 +89,9 @@ const submit = () => {
     }
     form.post(`/posts/${props.post.id}`);
 };
+
+const inputClasses = 'h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
+const selectClasses = 'flex h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-1 text-sm text-stone-900 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500';
 </script>
 
 <template>
@@ -109,7 +124,7 @@ const submit = () => {
 
                         <div class="space-y-2">
                             <label for="title" class="block text-sm font-bold text-emerald-950">Title <span class="text-red-500">*</span></label>
-                            <input id="title" v-model="form.title" required class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                            <input id="title" v-model="form.title" required :class="inputClasses" />
                             <p v-if="form.errors.title" class="text-sm font-medium text-red-500">{{ form.errors.title }}</p>
                         </div>
 
@@ -120,32 +135,69 @@ const submit = () => {
                                 v-model="form.description" 
                                 rows="5" 
                                 class="flex w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                :placeholder="categoryConfig.descriptionPlaceholder"
                                 required
                             ></textarea>
                             <p v-if="form.errors.description" class="text-sm font-medium text-red-500">{{ form.errors.description }}</p>
+                        </div>
+
+                        <!-- Category-Specific Meta Fields -->
+                        <div v-if="categoryConfig.fields.length > 0" class="space-y-4 rounded-xl border border-stone-200 bg-stone-50/50 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-stone-400">{{ selectedCategory?.name }} Details</p>
+                            <div v-for="field in categoryConfig.fields" :key="field.key" class="space-y-1.5">
+                                <label :for="`meta_${field.key}`" class="block text-sm font-bold text-emerald-950">
+                                    {{ field.label }}
+                                    <span v-if="field.required" class="text-red-500">*</span>
+                                </label>
+                                <select 
+                                    v-if="field.type === 'select'"
+                                    :id="`meta_${field.key}`" 
+                                    v-model="form.meta[field.key]" 
+                                    :class="selectClasses"
+                                >
+                                    <option value="" disabled>Select...</option>
+                                    <option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                </select>
+                                <input 
+                                    v-else
+                                    :id="`meta_${field.key}`" 
+                                    v-model="form.meta[field.key]" 
+                                    :type="field.type === 'number' ? 'number' : 'text'"
+                                    :placeholder="field.placeholder" 
+                                    :required="field.required"
+                                    :class="inputClasses" 
+                                />
+                            </div>
                         </div>
 
                         <!-- Tags -->
                         <div class="space-y-2">
                             <label class="block text-sm font-bold text-emerald-950">Tags</label>
                             <TagsInput v-model="form.tags" placeholder="e.g. urgent, discount" />
+                            <!-- Suggested Tags -->
+                            <div v-if="categoryConfig.suggestedTags.length > 0" class="flex flex-wrap items-center gap-1.5 pt-1">
+                                <span class="text-[11px] font-medium text-stone-400">Suggestions:</span>
+                                <button
+                                    v-for="tag in categoryConfig.suggestedTags"
+                                    :key="tag"
+                                    type="button"
+                                    @click="addSuggestedTag(tag)"
+                                    :class="[
+                                        'rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-all',
+                                        form.tags.includes(tag)
+                                            ? 'bg-emerald-700 text-white'
+                                            : 'border border-stone-200 bg-white text-stone-500 hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700'
+                                    ]"
+                                >
+                                    + {{ tag }}
+                                </button>
+                            </div>
                             <p v-if="form.errors.tags" class="text-sm font-medium text-red-500">{{ form.errors.tags }}</p>
-                        </div>
-
-                        <!-- Dynamic Meta Fields -->
-                        <div v-if="selectedCategory?.name === 'Jobs & Hiring'" class="space-y-2">
-                            <label for="job_type" class="block text-sm font-bold text-emerald-950">Job Type</label>
-                            <select id="job_type" v-model="form.meta.job_type" class="flex h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-1 text-sm text-stone-900 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                                <option value="" disabled>Select type...</option>
-                                <option value="Full-Time">Full-Time</option>
-                                <option value="Part-Time">Part-Time</option>
-                                <option value="Contract">Contract</option>
-                            </select>
                         </div>
 
                         <div class="space-y-2">
                             <label for="city" class="block text-sm font-bold text-emerald-950">City <span class="text-red-500">*</span></label>
-                            <input id="city" v-model="form.city" required class="h-10 w-full rounded-xl border border-stone-200 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                            <input id="city" v-model="form.city" required :class="inputClasses" />
                             <p v-if="form.errors.city" class="text-sm font-medium text-red-500">{{ form.errors.city }}</p>
                         </div>
 
