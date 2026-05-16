@@ -28,7 +28,7 @@ class ContactController extends Controller
         $contactMessage = ContactMessage::create($validated);
 
         Mail::to('kortby@gmail.com')->send(new ContactMessageReceived($contactMessage));
-        Mail::to($contactMessage->email)->send(new ContactMessageConfirmation($contactMessage));
+        Mail::to($request->email)->send(new ContactMessageConfirmation($contactMessage));
 
         return redirect()->back()->with('success', 'Your message has been sent successfully. We will get back to you soon!');
     }
