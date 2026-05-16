@@ -1,14 +1,22 @@
-<p>Hi {{ $post->user->name }},</p>
+<x-mail::message>
+# New Message: {{ $post->title }}
 
-<p>You have received a new message regarding your post <strong>"{{ $post->title }}"</strong> on {{ config('app.name') }}.</p>
+Hi {{ $post->user->name }},
 
-<hr>
+You have received a new message regarding your post **"{{ $post->title }}"** on {{ config('app.name') }}.
 
-<p><strong>From:</strong> {{ $sender->name }} ({{ $sender->email }})</p>
+<x-mail::panel>
+**From:** {{ $sender->name }} ({{ $sender->email }})
 
-<p><strong>Message:</strong></p>
-<p>{!! nl2br(e($messageContent)) !!}</p>
+{{ $messageContent }}
+</x-mail::panel>
 
-<hr>
+<x-mail::button :url="config('app.url') . '/posts/' . $post->id">
+View Post
+</x-mail::button>
 
-<p><em>To reply to this message, simply reply directly to this email.</em></p>
+*To reply to this message, simply reply directly to this email.*
+
+Thanks,<br>
+{{ config('app.name') }}
+</x-mail::message>

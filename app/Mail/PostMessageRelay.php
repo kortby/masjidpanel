@@ -35,7 +35,7 @@ class PostMessageRelay extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.post-message-relay',
+            markdown: 'emails.post-message-relay',
         );
     }
 }
