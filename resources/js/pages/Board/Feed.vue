@@ -161,7 +161,7 @@ return null;
                 </div>
                 <Select
                     :model-value="filters.category_id ? String(filters.category_id) : 'all'"
-                    @update:model-value="(val: string) => {
+                    @update:model-value="(val: any) => {
                         const params: any = { search: filters.search, location: filters.location, tag: filters.tag };
                         if (val !== 'all') params.category_id = val;
                         router.get('/feed', params, { preserveState: true, preserveScroll: true, replace: true });

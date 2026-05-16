@@ -39,6 +39,11 @@ const deletePost = () => {
     <div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <Link href="/" class="mb-6 inline-block text-sm text-stone-500 transition-colors hover:text-emerald-800 hover:underline">&larr; Back to Board</Link>
 
+        <div v-if="$page.props.flash?.success" class="mb-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <p class="text-sm font-medium text-emerald-800">{{ $page.props.flash.success }}</p>
+        </div>
+
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <!-- Main Content -->
             <div class="space-y-6 md:col-span-2">
