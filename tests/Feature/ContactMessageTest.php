@@ -41,13 +41,13 @@ it('sends email to admin and confirmation to sender', function () {
         'message' => 'I would like to discuss a partnership opportunity.',
     ]);
 
-    Mail::assertSent(ContactMessageReceived::class, function ($mail) {
+    Mail::assertQueued(ContactMessageReceived::class, function ($mail) {
         return $mail->hasTo('kortby@gmail.com')
             && $mail->contactMessage->name === 'Jane Doe'
             && $mail->contactMessage->subject === 'Partnership inquiry';
     });
 
-    Mail::assertSent(ContactMessageConfirmation::class, function ($mail) {
+    Mail::assertQueued(ContactMessageConfirmation::class, function ($mail) {
         return $mail->hasTo('jane@example.com')
             && $mail->contactMessage->name === 'Jane Doe';
     });

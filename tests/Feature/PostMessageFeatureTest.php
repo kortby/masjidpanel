@@ -27,7 +27,7 @@ it('sends an email to the author when a post is created', function () {
         'zip_code' => '92123',
     ]);
 
-    Mail::assertSent(PostCreated::class, function ($mail) use ($user) {
+    Mail::assertQueued(PostCreated::class, function ($mail) use ($user) {
         return $mail->hasTo($user->email) && $mail->post->title === 'My New Post';
     });
 });
