@@ -127,22 +127,33 @@ const deletePost = () => {
                         </Link>
                     </div>
 
-                    <div v-else>
+                    <div v-else class="space-y-6">
                         <!-- Author chose to display public contact info -->
-                        <div v-if="post.has_public_contact" class="space-y-4">
-                            <div v-if="post.contact_info?.phone" class="flex items-center justify-between rounded-xl bg-stone-50 p-4">
-                                <span class="text-sm font-medium text-stone-500">Phone:</span>
-                                <span class="font-semibold text-emerald-950">{{ post.contact_info.phone }}</span>
+                        <div v-if="post.has_public_contact" class="space-y-3">
+                            <div v-if="post.contact_info?.phone" class="flex flex-col gap-1 rounded-2xl bg-stone-50 p-4">
+                                <span class="text-xs font-bold uppercase tracking-wider text-stone-400">Phone</span>
+                                <a :href="`tel:${post.contact_info.phone}`" class="font-semibold text-emerald-950 hover:text-emerald-800 hover:underline">
+                                    {{ post.contact_info.phone }}
+                                </a>
                             </div>
-                            <div v-if="post.contact_info?.email" class="flex items-center justify-between rounded-xl bg-stone-50 p-4">
-                                <span class="text-sm font-medium text-stone-500">Email:</span>
-                                <span class="font-semibold text-emerald-950">{{ post.contact_info.email }}</span>
+                            <div v-if="post.contact_info?.email" class="flex flex-col gap-1 rounded-2xl bg-stone-50 p-4 min-w-0">
+                                <span class="text-xs font-bold uppercase tracking-wider text-stone-400">Email</span>
+                                <a :href="`mailto:${post.contact_info.email}`" class="font-semibold text-emerald-950 break-all hover:text-emerald-800 hover:underline">
+                                    {{ post.contact_info.email }}
+                                </a>
                             </div>
                         </div>
 
-                        <!-- Author chose to hide info, use internal relay -->
-                        <div v-else class="space-y-4">
-                            <p class="mb-4 text-sm text-stone-600">The author has chosen to keep their contact information private. You can send them a secure message below.</p>
+                        <!-- Secure message relay (Always available to verified users or Super Admins) -->
+                        <div class="space-y-4">
+                            <p class="text-sm text-stone-600">
+                                <template v-if="!post.has_public_contact">
+                                    The author has chosen to keep their contact information private. You can send them a secure message below.
+                                </template>
+                                <template v-else>
+                                    Alternatively, you can send them a secure message below.
+                                </template>
+                            </p>
                             
                             <form @submit.prevent="submitMessage" class="space-y-4">
                                 <div class="space-y-2">

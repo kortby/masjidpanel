@@ -459,7 +459,8 @@ const deleteMessage = (id: number) => {
                                             <span v-else class="text-xs text-muted-foreground">Unknown User</span>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge v-if="post.is_expired" variant="outline" class="text-stone-500 border-stone-300">Expired</Badge>
+                                            <Badge v-if="!post.is_published" variant="outline" class="text-stone-500 border-stone-300 bg-stone-100">Unpublished</Badge>
+                                            <Badge v-else-if="post.is_expired" variant="outline" class="text-amber-600 border-amber-300 bg-amber-50">Expired</Badge>
                                             <Badge v-else variant="default" class="bg-emerald-600 hover:bg-emerald-700">Active</Badge>
                                         </TableCell>
                                         <TableCell class="hidden md:table-cell text-sm text-stone-500">

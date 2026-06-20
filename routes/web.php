@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [CategoryController::class, 'index'])->name('home');
 Route::get('/feed', [PostController::class, 'index'])->name('feed');
 Route::get('/api/posts/search', [PostController::class, 'search'])->name('api.posts.search');
-Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post');
+Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post')->withTrashed();
 Route::get('/users/{user}', [PublicProfileController::class, 'show'])->name('users.show');
 
 Route::inertia('/about', 'About')->name('about');
@@ -36,11 +36,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
         Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
 
-        Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
-        Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
-        Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+        Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit')->withTrashed();
+        Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update')->withTrashed();
+        Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy')->withTrashed();
 
-        Route::post('/posts/{post}/message', [MessageController::class, 'store'])->name('posts.message');
+        Route::post('/posts/{post}/message', [MessageController::class, 'store'])->name('posts.message')->withTrashed();
     });
 
     Route::middleware(['role:Super Admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -60,7 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/messages/{message}/toggle-read', [AdminController::class, 'toggleReadMessage'])->name('messages.toggleRead');
         Route::delete('/messages/{message}', [AdminController::class, 'destroyMessage'])->name('messages.destroy');
 
-        Route::delete('/posts/{post}', [AdminController::class, 'destroyPost'])->name('posts.destroy');
+        Route::delete('/posts/{post}', [AdminController::class, 'destroyPost'])->name('posts.destroy')->withTrashed();
     });
 });
 

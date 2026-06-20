@@ -53,7 +53,7 @@ class AdminController extends Controller
                 'created_at' => $user->created_at,
             ]);
 
-        $posts = Post::with(['user', 'category'])
+        $posts = Post::withTrashed()->with(['user', 'category'])
             ->latest()
             ->paginate(50, ['*'], 'posts_page')
             ->withQueryString()
@@ -64,6 +64,7 @@ class AdminController extends Controller
                 'created_at' => $post->created_at,
                 'expires_at' => $post->expires_at,
                 'is_expired' => $post->expires_at && $post->expires_at->isPast(),
+                'is_published' => ! $post->trashed(),
                 'user' => $post->user ? [
                     'id' => $post->user->id,
                     'name' => $post->user->name,
@@ -212,6 +213,12 @@ class AdminController extends Controller
 
     public function destroyPost(Post $post)
     {
+        if ($post->trashed()) {
+            $post->forceDelete();
+
+            return redirect()->back()->with('success', 'Post permanently deleted.');
+        }
+
         $post->delete();
 
         return redirect()->back()->with('success', 'Post deleted successfully.');

@@ -160,6 +160,10 @@ class PostController extends Controller
 
     public function edit(Request $request, Post $post)
     {
+        if ($post->trashed()) {
+            abort_if(! $request->user()?->hasRole('Super Admin'), 404);
+        }
+
         abort_if($post->user_id !== $request->user()->id && ! $request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
 
         $categories = Category::orderBy('name')->get();
@@ -191,6 +195,10 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post)
     {
+        if ($post->trashed()) {
+            abort_if(! $request->user()?->hasRole('Super Admin'), 404);
+        }
+
         abort_if($post->user_id !== $request->user()->id && ! $request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
 
         $validated = $request->validate([
@@ -251,6 +259,10 @@ class PostController extends Controller
 
     public function destroy(Request $request, Post $post)
     {
+        if ($post->trashed()) {
+            abort_if(! $request->user()?->hasRole('Super Admin'), 404);
+        }
+
         abort_if($post->user_id !== $request->user()->id && ! $request->user()->hasRole('Super Admin'), 403, 'Unauthorized');
 
         $post->delete();
@@ -260,10 +272,14 @@ class PostController extends Controller
 
     public function show(Request $request, Post $post)
     {
+        if ($post->trashed()) {
+            abort_if(! $request->user()?->hasRole('Super Admin'), 404);
+        }
+
         $post->load(['user', 'category', 'media', 'tags']);
 
         $user = $request->user();
-        $isVerified = $user && $user->is_verified;
+        $isVerified = $user && ($user->is_verified || $user->hasRole('Super Admin'));
 
         $author = $post->user;
         $contactInfo = null;
