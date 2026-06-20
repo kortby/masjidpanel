@@ -59,6 +59,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('/messages/{message}/toggle-read', [AdminController::class, 'toggleReadMessage'])->name('messages.toggleRead');
         Route::delete('/messages/{message}', [AdminController::class, 'destroyMessage'])->name('messages.destroy');
+
+        Route::delete('/posts/{post}', [AdminController::class, 'destroyPost'])->name('posts.destroy');
     });
 });
 

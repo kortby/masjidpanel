@@ -17,6 +17,7 @@ const props = defineProps<{
     };
     suggestions: any[];
     users: any;
+    posts: any;
     categories: any[];
     messages: any[];
 }>();
@@ -31,12 +32,15 @@ defineOptions({
     }
 });
 
-const activeSection = ref('overview');
+// Initialize active section from URL query param if present
+const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+const activeSection = ref(urlParams ? (urlParams.get('tab') || 'overview') : 'overview');
 const mobileMenuOpen = ref(false);
 
 const menuItems = [
     { key: 'overview', label: 'Overview', icon: LayoutDashboard },
     { key: 'users', label: 'Users', icon: Users },
+    { key: 'posts', label: 'Posts', icon: Activity },
     { key: 'categories', label: 'Categories', icon: Tags },
     { key: 'messages', label: 'Messages', icon: MessageSquare },
 ];
@@ -44,6 +48,14 @@ const menuItems = [
 const setSection = (key: string) => {
     activeSection.value = key;
     mobileMenuOpen.value = false;
+    
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', key);
+        url.searchParams.delete('users_page');
+        url.searchParams.delete('posts_page');
+        window.history.pushState({}, '', url);
+    }
 };
 
 const approve = (id: number) => {
@@ -79,6 +91,12 @@ const blockUser = (id: number) => {
 const unblockUser = (id: number) => {
     if (confirm('Are you sure you want to unblock this user?')) {
         router.post(`/admin/users/${id}/unblock`, {}, { preserveScroll: true });
+    }
+};
+
+const deletePost = (id: number) => {
+    if (confirm('Are you sure you want to delete this post? This cannot be undone.')) {
+        router.delete(`/admin/posts/${id}`, { preserveScroll: true });
     }
 };
 
@@ -329,6 +347,213 @@ const deleteMessage = (id: number) => {
                             </Table>
                         </div>
                     </CardContent>
+                    
+                    <!-- Pagination for Users -->
+                    <div v-if="users.last_page > 1" class="border-t border-stone-100 p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex flex-1 justify-between sm:hidden">
+                                <Link 
+                                    v-if="users.prev_page_url" 
+                                    :href="users.prev_page_url" 
+                                    class="relative inline-flex items-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                                    preserve-scroll
+                                >
+                                    Previous
+                                </Link>
+                                <span v-else class="relative inline-flex items-center rounded-md border border-stone-200 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-400 cursor-not-allowed">
+                                    Previous
+                                </span>
+                                <Link 
+                                    v-if="users.next_page_url" 
+                                    :href="users.next_page_url" 
+                                    class="relative ml-3 inline-flex items-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                                    preserve-scroll
+                                >
+                                    Next
+                                </Link>
+                                <span v-else class="relative ml-3 inline-flex items-center rounded-md border border-stone-200 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-400 cursor-not-allowed">
+                                    Next
+                                </span>
+                            </div>
+                            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-stone-500">
+                                        Showing <span class="font-medium">{{ users.from }}</span> to <span class="font-medium">{{ users.to }}</span> of <span class="font-medium">{{ users.total }}</span> users
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-xs" aria-label="Pagination">
+                                        <template v-for="(link, i) in users.links" :key="i">
+                                            <Link
+                                                v-if="link.url"
+                                                :href="link.url"
+                                                :class="[
+                                                    link.active 
+                                                        ? 'relative z-10 inline-flex items-center bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground focus:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary' 
+                                                        : 'relative inline-flex items-center px-3.5 py-2 text-sm font-semibold text-stone-900 ring-1 ring-inset ring-stone-300 hover:bg-stone-50 focus:z-20 focus:outline-offset-0',
+                                                    i === 0 ? 'rounded-l-md' : '',
+                                                    i === users.links.length - 1 ? 'rounded-r-md' : ''
+                                                ]"
+                                                v-html="link.label"
+                                                preserve-scroll
+                                            />
+                                            <span
+                                                v-else
+                                                :class="[
+                                                    'relative inline-flex items-center px-3.5 py-2 text-sm font-semibold text-stone-400 ring-1 ring-inset ring-stone-200 cursor-not-allowed',
+                                                    i === 0 ? 'rounded-l-md' : '',
+                                                    i === users.links.length - 1 ? 'rounded-r-md' : ''
+                                                ]"
+                                                v-html="link.label"
+                                            />
+                                        </template>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+            </template>
+
+            <!-- Posts Section -->
+            <template v-if="activeSection === 'posts'">
+                <div>
+                    <h1 class="hidden text-2xl font-bold tracking-tight md:block">Post Management</h1>
+                    <p class="text-sm text-muted-foreground">Monitor and manage all user posts and view author information.</p>
+                </div>
+
+                <Card>
+                    <CardContent class="p-0">
+                        <div class="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Post Title</TableHead>
+                                        <TableHead>Category</TableHead>
+                                        <TableHead>Author Details</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead class="hidden md:table-cell">Created At</TableHead>
+                                        <TableHead class="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow v-for="post in posts.data" :key="post.id">
+                                        <TableCell class="font-medium">
+                                            <div class="flex flex-col">
+                                                <Link :href="`/posts/${post.id}`" class="text-primary hover:underline font-bold">
+                                                    {{ post.title }}
+                                                </Link>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="secondary">{{ post.category_name || 'N/A' }}</Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div v-if="post.user" class="flex flex-col gap-0.5">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="font-semibold text-stone-900">{{ post.user.name }}</span>
+                                                    <Badge v-if="post.user.is_verified" variant="default" class="h-4 px-1.5 text-[9px] bg-green-600 hover:bg-green-700">Verified</Badge>
+                                                </div>
+                                                <span class="text-xs text-muted-foreground">{{ post.user.email }}</span>
+                                            </div>
+                                            <span v-else class="text-xs text-muted-foreground">Unknown User</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge v-if="post.is_expired" variant="outline" class="text-stone-500 border-stone-300">Expired</Badge>
+                                            <Badge v-else variant="default" class="bg-emerald-600 hover:bg-emerald-700">Active</Badge>
+                                        </TableCell>
+                                        <TableCell class="hidden md:table-cell text-sm text-stone-500">
+                                            {{ new Date(post.created_at).toLocaleDateString() }}
+                                        </TableCell>
+                                        <TableCell class="text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <Link :href="`/posts/${post.id}/edit`">
+                                                    <Button size="sm" variant="outline" class="gap-1">
+                                                        <Pencil class="h-3.5 w-3.5" />
+                                                        Edit
+                                                    </Button>
+                                                </Link>
+                                                <Button size="sm" variant="destructive" class="gap-1" @click="deletePost(post.id)">
+                                                    <Trash2 class="h-3.5 w-3.5" />
+                                                    Delete
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow v-if="posts.data.length === 0">
+                                        <TableCell colspan="6" class="py-8 text-center text-muted-foreground">
+                                            No posts found.
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                    
+                    <!-- Pagination for Posts -->
+                    <div v-if="posts.last_page > 1" class="border-t border-stone-100 p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex flex-1 justify-between sm:hidden">
+                                <Link 
+                                    v-if="posts.prev_page_url" 
+                                    :href="posts.prev_page_url" 
+                                    class="relative inline-flex items-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-gray-50"
+                                    preserve-scroll
+                                >
+                                    Previous
+                                </Link>
+                                <span v-else class="relative inline-flex items-center rounded-md border border-stone-200 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-400 cursor-not-allowed">
+                                    Previous
+                                </span>
+                                <Link 
+                                    v-if="posts.next_page_url" 
+                                    :href="posts.next_page_url" 
+                                    class="relative ml-3 inline-flex items-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-gray-50"
+                                    preserve-scroll
+                                >
+                                    Next
+                                </Link>
+                                <span v-else class="relative ml-3 inline-flex items-center rounded-md border border-stone-200 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-400 cursor-not-allowed">
+                                    Next
+                                </span>
+                            </div>
+                            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-stone-500">
+                                        Showing <span class="font-medium">{{ posts.from }}</span> to <span class="font-medium">{{ posts.to }}</span> of <span class="font-medium">{{ posts.total }}</span> posts
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-xs" aria-label="Pagination">
+                                        <template v-for="(link, i) in posts.links" :key="i">
+                                            <Link
+                                                v-if="link.url"
+                                                :href="link.url"
+                                                :class="[
+                                                    link.active 
+                                                        ? 'relative z-10 inline-flex items-center bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground focus:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary' 
+                                                        : 'relative inline-flex items-center px-3.5 py-2 text-sm font-semibold text-stone-900 ring-1 ring-inset ring-stone-300 hover:bg-stone-50 focus:z-20 focus:outline-offset-0',
+                                                    i === 0 ? 'rounded-l-md' : '',
+                                                    i === posts.links.length - 1 ? 'rounded-r-md' : ''
+                                                ]"
+                                                v-html="link.label"
+                                                preserve-scroll
+                                            />
+                                            <span
+                                                v-else
+                                                :class="[
+                                                    'relative inline-flex items-center px-3.5 py-2 text-sm font-semibold text-stone-400 ring-1 ring-inset ring-stone-200 cursor-not-allowed',
+                                                    i === 0 ? 'rounded-l-md' : '',
+                                                    i === posts.links.length - 1 ? 'rounded-r-md' : ''
+                                                ]"
+                                                v-html="link.label"
+                                            />
+                                        </template>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </Card>
             </template>
 

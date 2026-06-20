@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BannedIdentifier;
 use App\Models\Category;
 use App\Models\CategorySuggestion;
 use App\Models\ContactMessage;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -39,7 +41,8 @@ class AdminController extends Controller
 
         $users = User::withCount('posts')
             ->latest()
-            ->paginate(50)
+            ->paginate(50, ['*'], 'users_page')
+            ->withQueryString()
             ->through(fn ($user) => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -50,6 +53,25 @@ class AdminController extends Controller
                 'created_at' => $user->created_at,
             ]);
 
+        $posts = Post::with(['user', 'category'])
+            ->latest()
+            ->paginate(50, ['*'], 'posts_page')
+            ->withQueryString()
+            ->through(fn ($post) => [
+                'id' => $post->id,
+                'title' => $post->title,
+                'category_name' => $post->category?->name,
+                'created_at' => $post->created_at,
+                'expires_at' => $post->expires_at,
+                'is_expired' => $post->expires_at && $post->expires_at->isPast(),
+                'user' => $post->user ? [
+                    'id' => $post->user->id,
+                    'name' => $post->user->name,
+                    'email' => $post->user->email,
+                    'is_verified' => (bool) $post->user->is_verified,
+                ] : null,
+            ]);
+
         $categories = Category::withCount('posts')->orderBy('name')->get();
 
         $messages = ContactMessage::latest()->get();
@@ -58,6 +80,7 @@ class AdminController extends Controller
             'metrics' => $metrics,
             'suggestions' => $suggestions,
             'users' => $users,
+            'posts' => $posts,
             'categories' => $categories,
             'messages' => $messages,
         ]);
@@ -89,20 +112,20 @@ class AdminController extends Controller
 
         $user->update(['banned_at' => now()]);
 
-        \App\Models\BannedIdentifier::firstOrCreate([
+        BannedIdentifier::firstOrCreate([
             'type' => 'email',
             'value' => $user->email,
         ], ['user_id' => $user->id]);
 
         if ($user->device_id) {
-            \App\Models\BannedIdentifier::firstOrCreate([
+            BannedIdentifier::firstOrCreate([
                 'type' => 'device_cookie',
                 'value' => $user->device_id,
             ], ['user_id' => $user->id]);
         }
 
         if ($user->phone_number) {
-            \App\Models\BannedIdentifier::firstOrCreate([
+            BannedIdentifier::firstOrCreate([
                 'type' => 'phone_number',
                 'value' => $user->phone_number,
             ], ['user_id' => $user->id]);
@@ -111,15 +134,15 @@ class AdminController extends Controller
         try {
             $fingerprints = $user->paymentMethods()->map(fn ($pm) => $pm->card->fingerprint ?? null)->filter()->unique();
             foreach ($fingerprints as $fingerprint) {
-                \App\Models\BannedIdentifier::firstOrCreate([
+                BannedIdentifier::firstOrCreate([
                     'type' => 'stripe_fingerprint',
                     'value' => $fingerprint,
                 ], ['user_id' => $user->id]);
             }
-            
+
             $user->subscriptions->each->cancelNow();
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to block Stripe fingerprints for user {$user->id}: " . $e->getMessage());
+            Log::error("Failed to block Stripe fingerprints for user {$user->id}: ".$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'User has been permanently blocked.');
@@ -128,8 +151,8 @@ class AdminController extends Controller
     public function unblockUser(User $user)
     {
         $user->update(['banned_at' => null]);
-        
-        \App\Models\BannedIdentifier::where('user_id', $user->id)->delete();
+
+        BannedIdentifier::where('user_id', $user->id)->delete();
 
         return redirect()->back()->with('success', 'User has been unblocked.');
     }
@@ -185,5 +208,12 @@ class AdminController extends Controller
         $message->delete();
 
         return redirect()->back()->with('success', 'Message deleted.');
+    }
+
+    public function destroyPost(Post $post)
+    {
+        $post->delete();
+
+        return redirect()->back()->with('success', 'Post deleted successfully.');
     }
 }
