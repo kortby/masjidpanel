@@ -131,3 +131,123 @@ it('blocks non-admin users from deleting posts using admin route', function () {
     $response->assertStatus(403);
     expect(Post::find($post->id))->not->toBeNull();
 });
+
+it('soft-deletes posts when deleted by standard user', function () {
+    Role::firstOrCreate(['name' => 'Super Admin']);
+    $user = User::factory()->create(['is_verified' => true]);
+    $category = Category::create(['name' => 'Other', 'slug' => 'other']);
+    $post = Post::create([
+        'user_id' => $user->id,
+        'category_id' => $category->id,
+        'title' => 'User Post To Delete',
+        'description' => 'Test',
+        'city' => 'Seattle',
+        'expires_at' => now()->addDays(30),
+    ]);
+
+    $response = $this->actingAs($user)->delete("/posts/{$post->id}");
+
+    $response->assertRedirect();
+    $post->refresh();
+    expect($post->trashed())->toBeTrue();
+    expect(Post::find($post->id))->toBeNull(); // Standard find excludes trashed
+});
+
+it('hides soft-deleted posts from standard users', function () {
+    Role::firstOrCreate(['name' => 'Super Admin']);
+    $user = User::factory()->create();
+    $category = Category::create(['name' => 'Other', 'slug' => 'other']);
+    $post = Post::create([
+        'user_id' => $user->id,
+        'category_id' => $category->id,
+        'title' => 'Trashed Post',
+        'description' => 'Test',
+        'city' => 'Seattle',
+        'expires_at' => now()->addDays(30),
+    ]);
+    $post->delete(); // Soft delete it
+
+    // Standard user gets 404
+    $response = $this->actingAs($user)->get("/posts/{$post->id}");
+    $response->assertStatus(404);
+});
+
+it('allows super admin to view soft-deleted posts', function () {
+    Role::firstOrCreate(['name' => 'Super Admin']);
+    $admin = User::factory()->create();
+    $admin->assignRole('Super Admin');
+
+    $category = Category::create(['name' => 'Other', 'slug' => 'other']);
+    $post = Post::create([
+        'user_id' => $admin->id,
+        'category_id' => $category->id,
+        'title' => 'Trashed Post',
+        'description' => 'Test',
+        'city' => 'Seattle',
+        'expires_at' => now()->addDays(30),
+    ]);
+    $post->delete(); // Soft delete it
+
+    $response = $this->actingAs($admin)->get("/posts/{$post->id}");
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('Posts/Show')
+        ->where('post.title', 'Trashed Post')
+    );
+});
+
+it('allows super admin to permanently delete soft-deleted posts', function () {
+    Role::firstOrCreate(['name' => 'Super Admin']);
+    $admin = User::factory()->create();
+    $admin->assignRole('Super Admin');
+
+    $category = Category::create(['name' => 'Other', 'slug' => 'other']);
+    $post = Post::create([
+        'user_id' => $admin->id,
+        'category_id' => $category->id,
+        'title' => 'Trashed Post',
+        'description' => 'Test',
+        'city' => 'Seattle',
+        'expires_at' => now()->addDays(30),
+    ]);
+    $post->delete(); // Soft delete it
+
+    // Verify it is in database with trashed
+    expect(Post::withTrashed()->find($post->id))->not->toBeNull();
+
+    $response = $this->actingAs($admin)->delete("/admin/posts/{$post->id}");
+
+    $response->assertRedirect();
+    expect(Post::withTrashed()->find($post->id))->toBeNull(); // Force deleted
+});
+
+it('allows messaging even if public contact info is shown', function () {
+    Role::firstOrCreate(['name' => 'Super Admin']);
+    $user = User::factory()->create(['is_verified' => true]);
+
+    // Author with show_phone = true
+    $author = User::factory()->create([
+        'is_verified' => true,
+        'show_phone' => true,
+        'phone_number' => '+15555555555',
+    ]);
+
+    $category = Category::create(['name' => 'Other', 'slug' => 'other']);
+    $post = Post::create([
+        'user_id' => $author->id,
+        'category_id' => $category->id,
+        'title' => 'Public Contact Post',
+        'description' => 'Test',
+        'city' => 'Seattle',
+        'expires_at' => now()->addDays(30),
+    ]);
+
+    // Send a message
+    $response = $this->actingAs($user)->post("/posts/{$post->id}/message", [
+        'message' => 'This is a test message to the author.',
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    $response->assertRedirect();
+    expect($post->messages()->count())->toBe(1);
+});
